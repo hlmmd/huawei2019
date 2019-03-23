@@ -28,7 +28,6 @@ int Car::ReadCar(const std::string car_infostr)
     dst = stoi(res[2]);
     maxspeed = stoi(res[3]);
     start_time = stoi(res[4]);
-
     return 0;
 }
 
@@ -69,7 +68,7 @@ int Car::getpath(std::vector<Cross> &Crosses, std::vector<Road> &Roads, std::vec
 
 int Car::CalDijkstraPath(std::vector<Cross> &Crosses, std::vector<Road> &Roads)
 {
-    std::vector<int> dist(Crosses.size(), INT_MAX);
+    std::vector<double> dist(Crosses.size(), 9999999);
     std::vector<bool> visited(Crosses.size(), false);
     std::vector<int> path(Crosses.size(), -1);
 
@@ -98,7 +97,9 @@ int Car::CalDijkstraPath(std::vector<Cross> &Crosses, std::vector<Road> &Roads)
             int dst_id = (Roads[roadpos].dst_cross == Crosses[pos].id) ? Roads[roadpos].src_cross : Roads[roadpos].dst_cross;
 
             int dist_pos = Cross_findpos_by_id(Crosses, dst_id);
-            dist[dist_pos] = (roadlength / speed) + ((roadlength % speed) != 0);
+
+            dist[dist_pos] = ( (double)roadlength / speed) ;
+            //dist[dist_pos] = (roadlength / speed) + ((roadlength % speed) != 0);
 
             //       std::cout << pos << " " << roadpos << " " << dst_id << " "<<roadlength<<" "<<speed<<" "<<dist[dist_pos]<<std::endl;
             path[dist_pos] = v0;
@@ -111,7 +112,7 @@ int Car::CalDijkstraPath(std::vector<Cross> &Crosses, std::vector<Road> &Roads)
     for (int c = 1; c < Crosses.size(); c++)
     {
 
-        int tempmin = INT_MAX;
+        double tempmin = 9999999;
         int minpos = INT_MAX;
 
         // for (int i = 0; i < Crosses.size(); i++)
@@ -157,7 +158,7 @@ int Car::CalDijkstraPath(std::vector<Cross> &Crosses, std::vector<Road> &Roads)
                     continue;
 
                 //这里存在一个问题，道路长度能否整除speed?如果不能，则向上取整?
-                int tempdist = (roadlength / speed) + ((roadlength % speed) != 0);
+                double tempdist =  ( (double)roadlength / speed) ;
                 int dst_id = (Roads[roadpos].dst_cross == Crosses[pos].id) ? Roads[roadpos].src_cross : Roads[roadpos].dst_cross;
 
                 //std::cout << pos << " " << roadpos << " " << dst_id << std::endl;

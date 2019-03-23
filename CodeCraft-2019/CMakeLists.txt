@@ -28,7 +28,8 @@ aux_source_directory(. DIR_SRCS)
 # 指定生成目标
 add_executable(CodeCraft-2019 ${DIR_SRCS})
 
-#./CodeCraft-2019 ../../config/car.txt  ../../config/road.txt  ../../config/cross.txt answer.txt
+# sh build_and_run.sh
+#../../bin/CodeCraft-2019 ../../config/car.txt  ../../config/road.txt  ../../config/cross.txt answer.txt
 
 #./CodeCraft-2019 ../../config_11/car.txt  ../../config_11/road.txt  ../../config_11/cross.txt answer.txt
 #./CodeCraft-2019 ../../config_12/car.txt  ../../config_12/road.txt  ../../config_12/cross.txt answer.txt
