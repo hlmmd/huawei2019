@@ -9,9 +9,9 @@ include_directories(${PROJECT_SOURCE_DIR}/lib)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # 设置可执行文件生成路径
-#set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../bin)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../bin)
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
+#set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 
 # 生成debug版本
 SET(CMAKE_BUILD_TYPE "release")

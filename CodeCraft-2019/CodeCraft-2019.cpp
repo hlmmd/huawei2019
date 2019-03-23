@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[])
 {
-
+	srand(time(0));
 	struct timeval start;
 	struct timeval end;
 	unsigned long diff;

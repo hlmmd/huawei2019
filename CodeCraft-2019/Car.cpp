@@ -7,6 +7,8 @@
 
 #include "common.h"
 
+
+
 int Car::ReadCar(const std::string car_infostr)
 {
     std::vector<std::string> res;
@@ -122,6 +124,8 @@ int Car::CalDijkstraPath(std::vector<Cross> &Crosses, std::vector<Road> &Roads)
         //         std::cout << i << " " << dist[i] << std::endl;
         //     }
         // }
+
+        
         for (int i = 0; i < Crosses.size(); i++)
         {
             if (visited[i] == false && dist[i] < tempmin)
@@ -130,6 +134,19 @@ int Car::CalDijkstraPath(std::vector<Cross> &Crosses, std::vector<Road> &Roads)
                 minpos = i;
             }
         }
+
+        std::vector<int> Random_pos;
+        for (int i = 0; i < Crosses.size(); i++)
+        {
+            if (visited[i] == false &&  IsAlmostEqual( dist[i],tempmin))
+            {
+                Random_pos.push_back(i);
+            }
+        }
+
+        
+        minpos =Random_pos[ rand()%Random_pos.size()];
+
 
         if (Crosses[minpos].id == dst)
         {
