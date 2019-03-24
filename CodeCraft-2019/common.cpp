@@ -1,16 +1,113 @@
 #include "common.h"
 
-
-
-int Divide_Group(std::vector<Car> & cars,std::vector< std::vector<Car>> & cars_group,int num_of_group)
+double Cal_difference(std::set<int> &a, std::set<int> &b)
 {
+
+    //判断两个set的相关程度（交集/a)
+    //  static double inter_value = 0.1;
+    std::set<int> c;
+    set_union(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.begin()));
+    // std::set<int> d;
+    // set_intersection(a.begin(), a.end(), b.begin(), b.end(), inserter(d, d.begin()));
+
+
+  //  std::cout<<" AAAAAA "<<(double)a.size() / c.size()<<std::endl;
     
+    return (double)a.size() / c.size();
+}
 
+bool Is_newgroup(double diff_value)
+{
+    //判断两个set的相关程度（交集/并集)
+    const double inter_value = 0.33;
+    if (inter_value > diff_value)
+        return true;
+    else
+    {
+        return false;
+    }
+}
 
+bool Is_Samegroup(std::set<int> &a, std::set<int> &b)
+{
+    //判断两个set的相关程度（交集/并集)
+    static double inter_value = 0.2;
+    std::set<int> c;
+    set_union(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.begin()));
+    std::set<int> d;
+    set_intersection(a.begin(), a.end(), b.begin(), b.end(), inserter(d, d.begin()));
+
+    //   std::cout<< (double)d.size() / c.size()<<std::endl;
+
+    if (inter_value < (double)d.size() / c.size())
+        return true;
+    else
+    {
+        return false;
+    }
+}
+
+int Divide_Group(std::vector<Car> &cars, std::vector<std::vector<Car>> &cars_group, int num_of_group)
+{
+    if (cars.size() == 0)
+        return 0;
+    std::vector<Car> v0;
+    cars_group.push_back(v0);
+    cars_group[0].push_back(cars[0]);
+
+    for (int i = 1; i < cars.size(); i++)
+    {
+        bool inserted = false;
+        int maxpos = -1;
+        double maxdiff=-1;
+        for (int j = 0; j < cars_group.size(); j++)
+        {
+            double diff = 0;
+            for (int k = 0;k<10 && k < cars_group[j].size(); k++)
+            {
+           //     std::cout<<diff<<std::endl;
+                diff += Cal_difference(cars[i].road_set, cars_group[j][rand()%cars_group[j].size()].road_set);
+            }
+
+            diff /= std::min((int) cars_group[j].size(),10);
+       //     std::cout<<diff<<std::endl;
+
+            if (Is_newgroup(diff))
+            {
+                std::cout<<"new group"<<std::endl;
+                inserted = true;
+                cars_group.push_back(v0);
+                cars_group[cars_group.size() - 1].push_back(cars[i]);
+                break;
+            }
+            if(maxdiff<diff)
+            {
+                maxdiff=diff;
+                maxpos=j;
+            }
+
+            // if (Is_Samegroup(cars[i].road_set, cars_group[j][0].road_set))
+            // {
+            //     inserted = true;
+            //     cars_group[j].push_back(cars[i]);
+            //     break;
+            // }
+        }
+        if(inserted==false)
+        {
+            cars_group[maxpos].push_back(cars[i]);
+        }
+
+        // if(inserted==false)//没有找到同类，则新开一个组
+        // {
+        //  //   std::cout<<"new"<<std::endl;
+        //     cars_group.push_back(v0);
+        //     cars_group[cars_group.size()-1].push_back(cars[i]);
+        // }
+    }
 
     return 0;
 }
-
 
 bool IsAlmostEqual(double x, double y)
 {
@@ -163,9 +260,7 @@ int WriteAnswer(std::vector<Car> &cars, const std::string &answerPath)
         out << car.start_time;
         for (auto road_id : car.road_seq)
             out << ',' << road_id;
-        // for(int i = 0;i<car.road_seq.size()-1;i++)
-        //     out<<car.road_seq[i]<<',';
-        // out<<car.road_seq[car.road_seq.size()-1];
+
         out << ')' << std::endl;
     }
 

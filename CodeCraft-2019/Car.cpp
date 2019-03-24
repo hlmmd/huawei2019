@@ -7,6 +7,8 @@
 
 #include "common.h"
 
+#include <unistd.h>
+#include <stdlib.h>
 
 
 int Car::ReadCar(const std::string car_infostr)
@@ -35,11 +37,11 @@ int Car::ReadCar(const std::string car_infostr)
 
 void Car::Display()
 {
-    std::cout << id << " " << src << " " << dst << " " << maxspeed << " " << start_time << std::endl;
+    //   std::cout << id << " " << src << " " << dst << " " << maxspeed << " " << start_time << std::endl;
 
     for (int i = 0; i < road_seq.size(); i++)
         std::cout << road_seq[i] << " ";
-    //std::cout << std::endl;
+    std::cout << std::endl;
 }
 
 int Car::getpath(std::vector<Cross> &Crosses, std::vector<Road> &Roads, std::vector<int> &path, int src_cross, int dst_cross)
@@ -64,7 +66,9 @@ int Car::getpath(std::vector<Cross> &Crosses, std::vector<Road> &Roads, std::vec
             road_seq.push_back(road_id);
         }
     }
- //   std::cout << std::endl;
+    std::set<int> st(road_seq.begin(), road_seq.end());
+    road_set = st;
+    //   std::cout << std::endl;
     return 0;
 }
 
@@ -100,7 +104,7 @@ int Car::CalDijkstraPath(std::vector<Cross> &Crosses, std::vector<Road> &Roads)
 
             int dist_pos = Cross_findpos_by_id(Crosses, dst_id);
 
-            dist[dist_pos] = ( (double)roadlength / speed) ;
+            dist[dist_pos] = ((double)roadlength / speed);
             //dist[dist_pos] = (roadlength / speed) + ((roadlength % speed) != 0);
 
             //       std::cout << pos << " " << roadpos << " " << dst_id << " "<<roadlength<<" "<<speed<<" "<<dist[dist_pos]<<std::endl;
@@ -125,7 +129,6 @@ int Car::CalDijkstraPath(std::vector<Cross> &Crosses, std::vector<Road> &Roads)
         //     }
         // }
 
-        
         for (int i = 0; i < Crosses.size(); i++)
         {
             if (visited[i] == false && dist[i] < tempmin)
@@ -135,18 +138,17 @@ int Car::CalDijkstraPath(std::vector<Cross> &Crosses, std::vector<Road> &Roads)
             }
         }
 
-        std::vector<int> Random_pos;
-        for (int i = 0; i < Crosses.size(); i++)
-        {
-            if (visited[i] == false &&  IsAlmostEqual( dist[i],tempmin))
-            {
-                Random_pos.push_back(i);
-            }
-        }
+        // std::vector<int> Random_pos;
+        // for (int i = 0; i < Crosses.size(); i++)
+        // {
+        //     if (visited[i] == false &&  IsAlmostEqual( dist[i],tempmin))
+        //     {
+        //         Random_pos.push_back(i);
+        //     }
+        // }
 
-        
-        minpos =Random_pos[ rand()%Random_pos.size()];
-
+        //
+        // minpos =Random_pos[ rand()%Random_pos.size()];
 
         if (Crosses[minpos].id == dst)
         {
@@ -175,7 +177,7 @@ int Car::CalDijkstraPath(std::vector<Cross> &Crosses, std::vector<Road> &Roads)
                     continue;
 
                 //这里存在一个问题，道路长度能否整除speed?如果不能，则向上取整?
-                double tempdist =  ( (double)roadlength / speed) ;
+                double tempdist = ((double)roadlength / speed);
                 int dst_id = (Roads[roadpos].dst_cross == Crosses[pos].id) ? Roads[roadpos].src_cross : Roads[roadpos].dst_cross;
 
                 //std::cout << pos << " " << roadpos << " " << dst_id << std::endl;
@@ -202,6 +204,4 @@ int Car::WriteAnswer(const std::string &answerPath)
 {
     std::ofstream out;
     out.open(answerPath, std::ios::out);
- 
-
 }

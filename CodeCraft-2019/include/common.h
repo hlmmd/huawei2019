@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <stack>
 #include <cmath>
+#include <set>
 #include "Cross.h"
 #include "Road.h"
 #include "Car.h"
@@ -13,6 +14,12 @@
 class Car;
 class Road;
 class Cross;
+
+double Cal_difference(std::set<int> &a, std::set<int> &b);
+
+bool Is_newgroup(double diff_value);
+
+bool Is_Samegroup(std::set<int> &a, std::set<int> &b);
 
 int Divide_Group(std::vector<Car> &cars, std::vector<std::vector<Car>> &cars_group, int num_of_group ); //分组。将车分成多个组，使得每个组内相关性达到一个阈值
 

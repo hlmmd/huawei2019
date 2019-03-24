@@ -42,20 +42,32 @@ int main(int argc, char *argv[])
 	for (auto &cross : crosses)
 		cross.RemoveSingleRoad(roads);
 
-	int time = 0;
+	int time = 1;
 
 	auto comp = [](Car car1, Car car2) { return car1.start_time < car2.start_time; };
 	std::sort(cars.begin(), cars.end(), comp);
 	for (auto &car : cars)
 	{
 		//	car.Display();
-		car.start_time += time;
+		car.start_time = time;
 		time += car.CalDijkstraPath(crosses, roads);
 		//	std::cout<<time<<" ";
 		//		car.Display();
 		//std::cout<<car.road_seq.size()<<" ";
 	}
 
+	std::vector<std::vector<Car>> cars_group;
+//	Divide_Group(cars, cars_group, 0);
+
+	for (int i = 0; i < cars_group.size(); i++)
+	{
+		//std::cout << "Next group:" << cars_group[i].size() << std::endl;
+		for (int j = 0; j < cars_group[i].size(); j++)
+		{
+		//	cars_group[i][j].Display();
+		}
+	}
+	std::cout<<cars_group.size()<<std::endl;
 	std::cout << time << std::endl;
 
 	auto comp2 = [](Car car1, Car car2) { return car1.id < car2.id; };

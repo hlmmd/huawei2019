@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <set>
 
 #ifndef CAR
 #define CAR
@@ -14,6 +15,8 @@ public:
     int start_time;
 
     std::vector<int> road_seq;
+    std::set<int> road_set;
+    
 
 public:
 
