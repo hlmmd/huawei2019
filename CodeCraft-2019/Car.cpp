@@ -5,13 +5,86 @@
 #include <sstream>
 #include <climits> //INT_MAX
 
-#include "common.h"
-
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "common.h"
+
 //静态成员变量需要声明
-std::vector<Car> Car::Cars ;
+std::vector<Car> Car::Cars;
+
+// int Car::set_dir_seq()
+// {
+
+// }
+
+int Car::set_dir_type()
+{
+    int cross_id = src;
+    for (int i = 0; i < road_seq.size(); i++)
+    {
+        int pos = Cross_findpos_by_id(cross_id);
+        for (int j = 0; j < ROADS_OF_CROSS; j++)
+        {
+            if (Cross::Crosses[pos].dir[j] == road_seq[i])
+            {
+                //int road_pos = Road_findpos_by_id(road_seq[i]);
+                cross_id = Get_next_cross_id(cross_id, road_seq[i]);
+                dir_seq.push_back(j);
+                break;
+            }
+        }
+    }
+
+    std::set<int> seq_set(dir_seq.begin(), dir_seq.end());
+
+    if (seq_set.size() <= 2)
+    {
+        if (seq_set.find(0) != seq_set.end() && seq_set.find(3) != seq_set.end())
+            dir_type = 3;
+        else
+        {
+            dir_type = *seq_set.begin();
+        }
+        is_dir_type_set = true;
+        return dir_type;
+    }
+
+    std::vector<int> count(4, 0);
+    for (int i = 0; i < dir_seq.size(); i++)
+        count[dir_seq[i]]++;
+
+    std::vector<int> ret = TopKFrequent(dir_seq, 2);
+
+    if (ret[0] == 0 && ret[1] == 1 || ret[0] == 1 && ret[1] == 0)
+        dir_type = 0;
+    else if (ret[0] == 0 && ret[1] == 3 || ret[0] == 3 && ret[1] == 0)
+        dir_type = 3;
+    else if (ret[0] == 2 && ret[1] == 1 || ret[0] == 1 && ret[1] == 2)
+        dir_type = 1;
+    else if (ret[0] == 2 && ret[1] == 3 || ret[0] == 3 && ret[1] == 2)
+        dir_type = 2;
+    else
+    {
+        dir_type = rand() % 4;
+    }
+
+    is_dir_type_set = false;
+    return dir_type;
+
+    // for (int i = 0; i < dir_seq.size(); i++)
+    // {
+    //     std::cout << dir_seq[i] << " ";
+    // }
+    // std::cout << std::endl;
+}
+
+//当一个方向无法搜索到路径时，更换方向。
+int Car::get_next_dir_type()
+{
+    dir_type = (dir_type + 1) % 4;
+    return dir_type;
+}
 
 int Car::ReadCar(const std::string car_infostr)
 {
@@ -34,6 +107,10 @@ int Car::ReadCar(const std::string car_infostr)
     dst = stoi(res[2]);
     maxspeed = stoi(res[3]);
     start_time = stoi(res[4]);
+
+    dir_type = -1;
+    is_dir_type_set = false;
+
     return 0;
 }
 
@@ -44,9 +121,12 @@ void Car::Display()
     for (int i = 0; i < road_seq.size(); i++)
         std::cout << road_seq[i] << " ";
     std::cout << std::endl;
+    for (int i = 0; i < dir_seq.size(); i++)
+        std::cout << dir_seq[i] << " ";
+    std::cout << std::endl;
 }
 
-int Car::getpath( std::vector<int> &path, int src_cross, int dst_cross)
+int Car::getpath(std::vector<int> &path, int src_cross, int dst_cross)
 {
     std::stack<int> s;
     int u = dst_cross;
@@ -64,7 +144,8 @@ int Car::getpath( std::vector<int> &path, int src_cross, int dst_cross)
         s.pop();
         if (!s.empty())
         {
-            int road_id = Get_Road_by_Two_crossid( Cross::Crosses[old].id, Cross::Crosses[s.top()].id);
+            Cross::Crosses[s.top()].cars_pass_num++;
+            int road_id = Get_Road_by_Two_crossid(Cross::Crosses[old].id, Cross::Crosses[s.top()].id);
             road_seq.push_back(road_id);
         }
     }
@@ -74,24 +155,54 @@ int Car::getpath( std::vector<int> &path, int src_cross, int dst_cross)
     return 0;
 }
 
-int Car::CalDijkstraPath()
+int Car::CalDijkstraPath_withdir()
 {
     std::vector<double> dist(Cross::Crosses.size(), 9999999);
     std::vector<bool> visited(Cross::Crosses.size(), false);
     std::vector<int> path(Cross::Crosses.size(), -1);
 
-    int v0 = Cross_findpos_by_id( src);
+    int v0 = Cross_findpos_by_id(src);
     dist[v0] = 0;
     path[v0] = v0;
 
-    for (int i = 0; i < ROADS_OF_CROSS; i++)
+    //根据dir_type确定搜索的方向
+    std::vector<int> road_dir(2, -1);
+    if (dir_type == 0)
     {
+        road_dir[0] = 0;
+        road_dir[1] = 1;
+    }
+    else if (dir_type == 1)
+    {
+        road_dir[0] = 1;
+        road_dir[1] = 2;
+    }
+    else if (dir_type == 2)
+    {
+        road_dir[0] = 2;
+        road_dir[1] = 3;
+    }
+    else if (dir_type == 3)
+    {
+        road_dir[0] = 3;
+        road_dir[1] = 0;
+    }
+    else
+    {
+        std::cout << "error dir_type:" << dir_type << std::endl;
+        exit(0);
+    }
+
+    for (int ii = 0; ii < 2; ii++)
+    {
+
+        int i = road_dir[ii];
         //判断起始点能到达哪些路口
-        int pos = Cross_findpos_by_id( src);
+        int pos = Cross_findpos_by_id(src);
         if (Cross::Crosses[pos].dir[i] != -1)
         {
             //如果路存在，则根据最大车速、道路限速、道路长度计算出该段距离，作为两个路口间的最短路径。
-            int roadpos = Road_findpos_by_id( Cross::Crosses[pos].dir[i]);
+            int roadpos = Road_findpos_by_id(Cross::Crosses[pos].dir[i]);
             int roadlength = Road::Roads[roadpos].length;
             int speed = std::min(maxspeed, Road::Roads[roadpos].maxspeed); //比较车速和限速，取较小值
 
@@ -104,7 +215,157 @@ int Car::CalDijkstraPath()
 
             int dst_id = (Road::Roads[roadpos].dst_cross == Cross::Crosses[pos].id) ? Road::Roads[roadpos].src_cross : Road::Roads[roadpos].dst_cross;
 
-            int dist_pos = Cross_findpos_by_id( dst_id);
+            int dist_pos = Cross_findpos_by_id(dst_id);
+
+            dist[dist_pos] = ((double)roadlength / speed);
+            //dist[dist_pos] = (roadlength / speed) + ((roadlength % speed) != 0);
+
+            //  std::cout << pos << " " << roadpos << " " << dst_id << " "<<roadlength<<" "<<speed<<" "<<dist[dist_pos]<<std::endl;
+            path[dist_pos] = v0;
+        }
+    }
+
+    //四个路口遍历过后，置为true，表示已经得到最短路径
+    visited[v0] = true;
+
+    for (int c = 1; c < Cross::Crosses.size(); c++)
+    {
+
+        double tempmin = 9999999;
+        int minpos = INT_MAX;
+        int road_priority = 999999;
+        // for (int i = 0; i < Cross::Crosses.size(); i++)
+        // {
+        //     if (visited[i] == false && dist[i] < tempmin)
+        //     {
+        //         std::cout << i << " " << dist[i] << std::endl;
+        //     }
+        // }
+
+        for (int i = 0; i < Cross::Crosses.size(); i++)
+        {
+            if (visited[i] == false && dist[i] < tempmin)
+            {
+                tempmin = dist[i];
+                minpos = i;
+                road_priority = Cross::Crosses[i].Cal_priority();
+            }
+            //如果有相同的路径，如何选择?考虑道路的拥挤情况
+            else if (visited[i] == false &&  IsAlmostEqual(dist[i], tempmin)  && !IsAlmostEqual(dist[i],9999999))
+            {
+                int prior = Cross::Crosses[i].Cal_priority();
+                if (prior < road_priority)
+                {
+                    minpos = i;
+                    road_priority = prior;
+                }
+            }
+        }
+
+        //std::cout<<"aaa"<<std::endl;
+        // std::vector<int> Random_pos;
+        // for (int i = 0; i < Cross::Crosses.size(); i++)
+        // {
+        //     if (visited[i] == false &&  IsAlmostEqual( dist[i],tempmin))
+        //     {
+        //         Random_pos.push_back(i);
+        //     }
+        // }
+
+        //
+        // minpos =Random_pos[ rand()%Random_pos.size()];
+
+ if (minpos == INT_MAX)
+            return -1;
+
+        if (Cross::Crosses[minpos].id == dst)
+        {
+            // std::cout<<"AAA"<<std::endl;
+            getpath(path, Cross_findpos_by_id(src), Cross_findpos_by_id(dst));
+            return dist[minpos];
+        }
+
+       
+
+          //  std::cout << minpos << "AAA" << std::endl;
+          
+        //一遍循环后，得到一个最小的dist值，这个值必定对应到一个结点的最小路径
+        for (int ii = 0; ii < 2; ii++)
+        {
+
+            int i = road_dir[ii];
+            //判断起始点能到达哪些路口
+            //int pos = Cross_findpos_by_id(Crosses, minpos);
+            int pos = minpos;
+           
+            
+            if (Cross::Crosses[pos].dir[i] != -1)
+            {
+                //如果路存在，则根据最大车速、道路限速、道路长度计算出该段距离，作为两个路口间的最短路径。
+                int roadpos = Road_findpos_by_id(Cross::Crosses[pos].dir[i]);
+                int roadlength = Road::Roads[roadpos].length;
+                int speed = std::min(maxspeed, Road::Roads[roadpos].maxspeed); //比较车速和限速，取较小值
+
+                //单向路不做处理
+                if (Road::Roads[roadpos].dst_cross == Cross::Crosses[pos].id && Road::Roads[roadpos].is_dup == 0)
+                    continue;
+            
+
+                //这里存在一个问题，道路长度能否整除speed?如果不能，则向上取整?
+                double tempdist = ((double)roadlength / speed);
+                int dst_id = (Road::Roads[roadpos].dst_cross == Cross::Crosses[pos].id) ? Road::Roads[roadpos].src_cross : Road::Roads[roadpos].dst_cross;
+
+                //std::cout << pos << " " << roadpos << " " << dst_id << std::endl;
+                int dist_pos = Cross_findpos_by_id(dst_id);
+                if (visited[dist_pos] == false && dist[dist_pos] > (tempmin + tempdist))
+                {
+                    //只有比原值更小才更新
+
+                    dist[dist_pos] = tempmin + tempdist;
+                    path[dist_pos] = pos;
+
+                     //  std::cout << pos << " " << roadpos << " " << dst_id << " "<<roadlength<<" "<<speed<<" "<<dist[dist_pos]<<std::endl;
+                }
+            }
+        }
+        //     exit(0);
+        visited[minpos] = true;
+    }
+
+    return -1;
+}
+
+int Car::CalDijkstraPath()
+{
+    std::vector<double> dist(Cross::Crosses.size(), 9999999);
+    std::vector<bool> visited(Cross::Crosses.size(), false);
+    std::vector<int> path(Cross::Crosses.size(), -1);
+
+    int v0 = Cross_findpos_by_id(src);
+    dist[v0] = 0;
+    path[v0] = v0;
+
+    for (int i = 0; i < ROADS_OF_CROSS; i++)
+    {
+        //判断起始点能到达哪些路口
+        int pos = Cross_findpos_by_id(src);
+        if (Cross::Crosses[pos].dir[i] != -1)
+        {
+            //如果路存在，则根据最大车速、道路限速、道路长度计算出该段距离，作为两个路口间的最短路径。
+            int roadpos = Road_findpos_by_id(Cross::Crosses[pos].dir[i]);
+            int roadlength = Road::Roads[roadpos].length;
+            int speed = std::min(maxspeed, Road::Roads[roadpos].maxspeed); //比较车速和限速，取较小值
+
+            //这里存在一个问题，道路长度能否整除speed?如果不能，则向上取整?
+            //路可能是双向的，注意判断起点终点
+
+            //单向路不做处理
+            if (Road::Roads[roadpos].dst_cross == Cross::Crosses[pos].id && Road::Roads[roadpos].is_dup == 0)
+                continue;
+
+            int dst_id = (Road::Roads[roadpos].dst_cross == Cross::Crosses[pos].id) ? Road::Roads[roadpos].src_cross : Road::Roads[roadpos].dst_cross;
+
+            int dist_pos = Cross_findpos_by_id(dst_id);
 
             dist[dist_pos] = ((double)roadlength / speed);
             //dist[dist_pos] = (roadlength / speed) + ((roadlength % speed) != 0);
@@ -137,18 +398,21 @@ int Car::CalDijkstraPath()
             {
                 tempmin = dist[i];
                 minpos = i;
+                road_priority = Cross::Crosses[i].Cal_priority();
             }
             //如果有相同的路径，如何选择?考虑道路的拥挤情况
-
-            else if(visited[i] == false && IsAlmostEqual(dist[i],tempmin))
+            else if (visited[i] == false && IsAlmostEqual(dist[i], tempmin)  && !IsAlmostEqual(dist[i],9999999) )
             {
-                
 
+                int prior = Cross::Crosses[i].Cal_priority();
+                if (prior < road_priority)
+                {
+                    minpos = i;
+                    road_priority = prior;
+                }
             }
         }
-
-
-
+        //std::cout<<"aaa"<<std::endl;
         // std::vector<int> Random_pos;
         // for (int i = 0; i < Cross::Crosses.size(); i++)
         // {
@@ -164,7 +428,7 @@ int Car::CalDijkstraPath()
         if (Cross::Crosses[minpos].id == dst)
         {
             // std::cout<<"AAA"<<std::endl;
-            getpath(path, Cross_findpos_by_id( src), Cross_findpos_by_id(dst));
+            getpath(path, Cross_findpos_by_id(src), Cross_findpos_by_id(dst));
             return dist[minpos];
         }
 
@@ -192,7 +456,7 @@ int Car::CalDijkstraPath()
                 int dst_id = (Road::Roads[roadpos].dst_cross == Cross::Crosses[pos].id) ? Road::Roads[roadpos].src_cross : Road::Roads[roadpos].dst_cross;
 
                 //std::cout << pos << " " << roadpos << " " << dst_id << std::endl;
-                int dist_pos = Cross_findpos_by_id( dst_id);
+                int dist_pos = Cross_findpos_by_id(dst_id);
                 if (visited[dist_pos] == false && dist[dist_pos] > (tempmin + tempdist))
                 {
                     //只有比原值更小才更新

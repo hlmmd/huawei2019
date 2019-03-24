@@ -8,6 +8,21 @@
 //静态成员变量需要声明
 std::vector<Cross> Cross::Crosses ;
 
+//计算路口遍历的优先级（当两个路口对应的最短路径相同时，如何选择？)
+int Cross::Cal_priority()
+{
+    //除以能转向的道路个数
+    int n = 0;
+    for(int i = 0 ;i<dir.size();i++)
+        if(dir[i]!=-1)
+            n++;
+    if(n==0)
+        exit(0);
+    int r = road_channel_num /n;
+    return cars_pass_num/r;
+}
+
+//计算路口车道总数
 int Cross::Cal_road_channel_num()
 {
     int count = 0 ;
@@ -15,12 +30,13 @@ int Cross::Cal_road_channel_num()
     {
         if(dir[i]!=-1)
         {
-            count+= dir[i];
+            //双向路算作两倍的车道
+            count+= Road::Roads[ Road_findpos_by_id (dir[i]) ].channel << Road::Roads[ Road_findpos_by_id (dir[i]) ].is_dup ;
 
         }
-
     }
-
+    road_channel_num = count;
+    return count;
 }
 
 

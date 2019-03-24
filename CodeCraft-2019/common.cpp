@@ -1,5 +1,44 @@
 #include "common.h"
 
+
+//求一个数组中出现次数最多的前K个数  leetcode 347
+std::vector<int> TopKFrequent(std::vector<int> &nums, int k)
+{
+    std::unordered_map<int, int> m;
+
+    for (auto num : nums)
+        ++m[num];
+    std::vector<std::vector<int>> buckets(nums.size() + 1);
+    for (auto p : m)
+        buckets[p.second].push_back(p.first);
+
+    std::vector<int> ans;
+    for (int i = buckets.size() - 1; i >= 0 && ans.size() < k; --i)
+    {
+        for (int num : buckets[i])
+        {
+            ans.push_back(num);
+            if (ans.size() == k)
+                break;
+        }
+    }
+    return ans;
+}
+
+int Get_next_cross_id(int cross_id, int road_id)
+{
+    int road_pos = Road_findpos_by_id(road_id);
+
+    if (Road::Roads[road_pos].src_cross == cross_id)
+    {
+        return Road::Roads[road_pos].dst_cross;
+    }
+    else
+    {
+        return Road::Roads[road_pos].src_cross;
+    }
+}
+
 double Cal_difference(std::set<int> &a, std::set<int> &b)
 {
 
@@ -110,7 +149,7 @@ int Divide_Group(std::vector<Car> &cars, std::vector<std::vector<Car>> &cars_gro
 
 bool IsAlmostEqual(double x, double y)
 {
-    if (fabs(x - y) < 1e-4)
+    if (fabs(x - y) < 1e-5)
     {
         return true;
     }

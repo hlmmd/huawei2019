@@ -21,8 +21,11 @@ public:
     int down;
     int left;
 
-    int cars_pass_num;
+    int cars_pass_num;  //所有车安排后经过该路口的总数（不包括起点）
     int road_channel_num;
+
+
+
     Cross(int i,int u,int r,int d,int l)
     {
        id = i;
@@ -40,6 +43,9 @@ public:
     void Display();
     int RemoveSingleRoad();
     int Cal_road_channel_num();
+
+    int Cal_priority();
+
 };
 
 #endif
