@@ -11,6 +11,9 @@ class Road;
 
 class Cross{
 public:
+
+    static std::vector<Cross> Crosses;
+
     int id;
     std::vector<int> dir;
     int up;
@@ -18,6 +21,8 @@ public:
     int down;
     int left;
 
+    int cars_pass_num;
+    int road_channel_num;
     Cross(int i,int u,int r,int d,int l)
     {
        id = i;
@@ -33,7 +38,8 @@ public:
 
     int ReadCross(const std::string );
     void Display();
-    int RemoveSingleRoad(std::vector<Road> &roads);
+    int RemoveSingleRoad();
+    int Cal_road_channel_num();
 };
 
 #endif

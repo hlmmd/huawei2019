@@ -5,6 +5,14 @@
 #include <sstream>
 #include "common.h"
 
+//静态成员变量需要声明
+std::vector<Road> Road::Roads ;
+
+int Road::Get_origin_priority()
+{
+    return cars_pass_num/channel;
+}
+
 int Road::ReadRoad(const std::string road_infostr)
 {
     std::vector<std::string> res;
@@ -28,7 +36,7 @@ int Road::ReadRoad(const std::string road_infostr)
     src_cross = stoi(res[4]);
     dst_cross = stoi(res[5]);
     is_dup = stoi(res[6]);
-
+    cars_pass_num=0;
     return 0;
 }
 

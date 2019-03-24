@@ -30,27 +30,25 @@ int main(int argc, char *argv[])
 	// std::cout << "crossPath is " << crossPath << std::endl;
 	// std::cout << "answerPath is " << answerPath << std::endl;
 
-	std::vector<Car> cars;
-	ReadCar(cars, carPath);
+	
+	ReadCar(Car::Cars, carPath);
 
-	std::vector<Road> roads;
-	ReadRoad(roads, roadPath);
+	ReadRoad(Road::Roads, roadPath);
 
-	std::vector<Cross> crosses;
-	ReadCross(crosses, crossPath);
+	ReadCross(Cross::Crosses, crossPath);
 
-	for (auto &cross : crosses)
-		cross.RemoveSingleRoad(roads);
+	for (auto &cross : Cross::Crosses)
+		cross.RemoveSingleRoad();
 
 	int time = 1;
 
 	auto comp = [](Car car1, Car car2) { return car1.start_time < car2.start_time; };
-	std::sort(cars.begin(), cars.end(), comp);
-	for (auto &car : cars)
+	std::sort(Car::Cars.begin(), Car::Cars.end(), comp);
+	for (auto &car : Car::Cars)
 	{
 		//	car.Display();
 		car.start_time = time;
-		time += car.CalDijkstraPath(crosses, roads);
+		time += car.CalDijkstraPath();
 		//	std::cout<<time<<" ";
 		//		car.Display();
 		//std::cout<<car.road_seq.size()<<" ";
@@ -71,8 +69,8 @@ int main(int argc, char *argv[])
 	std::cout << time << std::endl;
 
 	auto comp2 = [](Car car1, Car car2) { return car1.id < car2.id; };
-	std::sort(cars.begin(), cars.end(), comp2);
-	WriteAnswer(cars, answerPath);
+	std::sort(Car::Cars.begin(), Car::Cars.end(), comp2);
+	WriteAnswer(Car::Cars, answerPath);
 
 	gettimeofday(&end, NULL);
 	diff = 1000000 * (end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec;

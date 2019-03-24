@@ -5,6 +5,25 @@
 #include <sstream>
 #include "common.h"
 
+//静态成员变量需要声明
+std::vector<Cross> Cross::Crosses ;
+
+int Cross::Cal_road_channel_num()
+{
+    int count = 0 ;
+    for(int i=0;i<ROADS_OF_CROSS;i++)
+    {
+        if(dir[i]!=-1)
+        {
+            count+= dir[i];
+
+        }
+
+    }
+
+}
+
+
 int Cross::ReadCross(const std::string cross_infostr)
 {
     std::vector<std::string> res;
@@ -32,17 +51,19 @@ int Cross::ReadCross(const std::string cross_infostr)
     right = stoi(res[2]);
     down = stoi(res[3]);
     left = stoi(res[4]);
+
+    cars_pass_num = 0 ;
     return 0;
 }
 
-int Cross::RemoveSingleRoad(std::vector<Road> &roads)
+int Cross::RemoveSingleRoad()
 {
     for (int i = 0; i < ROADS_OF_CROSS; i++)
     {
         if (dir[i] != -1)
         {
-            int road_pos = Road_findpos_by_id(roads, dir[i]);
-            if (roads[road_pos].src_cross != id && roads[road_pos].dst_cross == id && roads[road_pos].is_dup == 0)
+            int road_pos = Road_findpos_by_id( dir[i]);
+            if (Road::Roads[road_pos].src_cross != id && Road::Roads[road_pos].dst_cross == id && Road::Roads[road_pos].is_dup == 0)
                 dir[i] = -1;
         }
     }

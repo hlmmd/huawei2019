@@ -17,6 +17,7 @@ public:
     std::vector<int> road_seq;
     std::set<int> road_set;
     
+    static std::vector<Car> Cars;
 
 public:
 
@@ -35,8 +36,8 @@ public:
     int ReadCar(const std::string carPath);
     void Display();
 
-    int CalDijkstraPath(std::vector<Cross>& Crosses,std::vector<Road>& Roads);
-    int getpath(std::vector<Cross>& Crosses,std::vector<Road>& Roads,std::vector<int> &path,int src_cross ,int dst_cross);
+    int CalDijkstraPath();
+    int getpath(std::vector<int> &path,int src_cross ,int dst_cross);
     int WriteAnswer(const std::string & answerPath);
 };
 

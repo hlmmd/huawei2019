@@ -121,17 +121,17 @@ bool IsAlmostEqual(double x, double y)
     }
 }
 
-int Get_Road_by_Two_crossid(std::vector<Road> &roads, std::vector<Cross> &crosses, int cross_src_id, int cross_dst_id)
+int Get_Road_by_Two_crossid( int cross_src_id, int cross_dst_id)
 {
-    int pos = Cross_findpos_by_id(crosses, cross_src_id);
+    int pos = Cross_findpos_by_id(cross_src_id);
 
     for (int i = 0; i < ROADS_OF_CROSS; i++)
     {
-        int road_id = crosses[pos].dir[i];
+        int road_id = Cross::Crosses[pos].dir[i];
         if (road_id != -1)
         {
-            int road_pos = Road_findpos_by_id(roads, road_id);
-            if (roads[road_pos].dst_cross == cross_dst_id || roads[road_pos].is_dup == 1 && roads[road_pos].src_cross == cross_dst_id)
+            int road_pos = Road_findpos_by_id(road_id);
+            if (Road::Roads[road_pos].dst_cross == cross_dst_id || Road::Roads[road_pos].is_dup == 1 && Road::Roads[road_pos].src_cross == cross_dst_id)
                 return road_id;
         }
     }
@@ -141,28 +141,28 @@ int Get_Road_by_Two_crossid(std::vector<Road> &roads, std::vector<Cross> &crosse
     return 0;
 }
 
-int Road_findpos_by_id(std::vector<Road> &roads, int roadid)
+int Road_findpos_by_id( int roadid)
 {
     if (roadid == -1)
         return -1;
     static std::unordered_map<int, int> map; //使用unordered_map存储
     if (map.empty())
     {
-        for (int i = 0; i < roads.size(); i++)
-            map[roads[i].id] = i;
+        for (int i = 0; i < Road::Roads.size(); i++)
+            map[Road::Roads[i].id] = i;
     }
     return map[roadid];
 }
 
-int Cross_findpos_by_id(std::vector<Cross> &crosses, int crossid)
+int Cross_findpos_by_id(int crossid)
 {
     if (crossid == -1)
         return -1;
     static std::unordered_map<int, int> map; //使用unordered_map存储
     if (map.empty())
     {
-        for (int i = 0; i < crosses.size(); i++)
-            map[crosses[i].id] = i;
+        for (int i = 0; i < Cross::Crosses.size(); i++)
+            map[Cross::Crosses[i].id] = i;
     }
     return map[crossid];
 }

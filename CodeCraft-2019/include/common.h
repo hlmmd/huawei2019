@@ -15,6 +15,7 @@ class Car;
 class Road;
 class Cross;
 
+
 double Cal_difference(std::set<int> &a, std::set<int> &b);
 
 bool Is_newgroup(double diff_value);
@@ -25,11 +26,11 @@ int Divide_Group(std::vector<Car> &cars, std::vector<std::vector<Car>> &cars_gro
 
 bool IsAlmostEqual(double x, double y); //判断两个浮点数是否相等
 
-int Get_Road_by_Two_crossid(std::vector<Road> &roads, std::vector<Cross> &crosses, int cross_src_id, int cross_dst_id);
+int Get_Road_by_Two_crossid( int cross_src_id, int cross_dst_id);
 
-int Road_findpos_by_id(std::vector<Road> &roads, int roadid); //根据Road的id找到对应在Road数组中的位置
+int Road_findpos_by_id(int roadid); //根据Road的id找到对应在Road数组中的位置
 
-int Cross_findpos_by_id(std::vector<Cross> &crosses, int crossid); //根据Cross的id找到对应在crosses数组中的位置
+int Cross_findpos_by_id(int crossid); //根据Cross的id找到对应在crosses数组中的位置
 
 std::string num_trim(std::string &);
 int ReadCar(std::vector<Car> &, const std::string);

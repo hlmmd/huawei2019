@@ -6,6 +6,9 @@
 #define ROAD
 class Road{
 public:
+
+    static std::vector<Road> Roads;
+
     int id;
     int length;
     int maxspeed;
@@ -13,6 +16,9 @@ public:
     int src_cross;
     int dst_cross;
     int is_dup;
+
+    int cars_pass_num;
+
 public:
     Road(int i,int l,int m,int c,int s,int d,int is_d)
     {
@@ -23,6 +29,7 @@ public:
        src_cross=s;
        dst_cross=d; 
        is_dup=is_d;
+       cars_pass_num=0;
     }
 
     Road()
@@ -32,7 +39,7 @@ public:
 
     int ReadRoad(const std::string );
     void Display();
-
+    int Get_origin_priority();
     
 };
 
