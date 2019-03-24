@@ -1,6 +1,5 @@
 #include "common.h"
 
-
 //求一个数组中出现次数最多的前K个数  leetcode 347
 std::vector<int> TopKFrequent(std::vector<int> &nums, int k)
 {
@@ -39,112 +38,57 @@ int Get_next_cross_id(int cross_id, int road_id)
     }
 }
 
-double Cal_difference(std::set<int> &a, std::set<int> &b)
+bool finish_start_group(std::vector<Car> &cars)
 {
-
-    //判断两个set的相关程度（交集/a)
-    //  static double inter_value = 0.1;
-    std::set<int> c;
-    set_union(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.begin()));
-    // std::set<int> d;
-    // set_intersection(a.begin(), a.end(), b.begin(), b.end(), inserter(d, d.begin()));
-
-    //  std::cout<<" AAAAAA "<<(double)a.size() / c.size()<<std::endl;
-
-    return (double)a.size() / c.size();
+    for (int i = 0; i < cars.size(); i++)
+        if (cars[i].started == false)
+            return false;
+    return true;
 }
 
-bool Is_newgroup(double diff_value)
+int Divide_Group(std::vector<std::vector<Car>> &cars_group)
 {
-    //判断两个set的相关程度（交集/并集)
-    const double inter_value = 0.33;
-    if (inter_value > diff_value)
-        return true;
-    else
+    for (auto car : Car::Cars)
     {
-        return false;
+        cars_group[car.dir_type].push_back(car);
+        if (car.dir_type < 0 || car.dir_type > 3)
+        {
+            std::cout << "dir_type error: " << car.dir_type << std::endl;
+            exit(0);
+        }
     }
-}
 
-bool Is_Samegroup(std::set<int> &a, std::set<int> &b)
-{
-    //判断两个set的相关程度（交集/并集)
-    static double inter_value = 0.2;
-    std::set<int> c;
-    set_union(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.begin()));
-    std::set<int> d;
-    set_intersection(a.begin(), a.end(), b.begin(), b.end(), inserter(d, d.begin()));
-
-    //   std::cout<< (double)d.size() / c.size()<<std::endl;
-
-    if (inter_value < (double)d.size() / c.size())
-        return true;
-    else
+    for (auto &groups : cars_group)
     {
-        return false;
-    }
-}
+        auto comp = [](Car car1, Car car2) {
+            if (car1.is_dir_type_set == car2.is_dir_type_set)
+            {
+                //暂不考虑计划出发时间的影响
+                // if (car1.start_time == car2.start_time)
+                //     return car1.maxspeed > car2.maxspeed;
+                return car1.maxspeed > car2.maxspeed;
+            }
+            else
+                return car1.is_dir_type_set > car2.is_dir_type_set;
+        };
 
-int Divide_Group(std::vector<Car> &cars, std::vector<std::vector<Car>> &cars_group, int num_of_group)
-{
-    if (cars.size() == 0)
+        std::sort(groups.begin(), groups.end(), comp);
+    }
+
+    int count = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        count += cars_group[i].size();
+    }
+    if (count == Car::Cars.size())
+    {
         return 0;
-    std::vector<Car> v0;
-    cars_group.push_back(v0);
-    cars_group[0].push_back(cars[0]);
-
-    for (int i = 1; i < cars.size(); i++)
-    {
-        bool inserted = false;
-        int maxpos = -1;
-        double maxdiff = -1;
-        for (int j = 0; j < cars_group.size(); j++)
-        {
-            double diff = 0;
-            for (int k = 0; k < 10 && k < cars_group[j].size(); k++)
-            {
-                //     std::cout<<diff<<std::endl;
-                diff += Cal_difference(cars[i].road_set, cars_group[j][rand() % cars_group[j].size()].road_set);
-            }
-
-            diff /= std::min((int)cars_group[j].size(), 10);
-            //     std::cout<<diff<<std::endl;
-
-            if (Is_newgroup(diff))
-            {
-                std::cout << "new group" << std::endl;
-                inserted = true;
-                cars_group.push_back(v0);
-                cars_group[cars_group.size() - 1].push_back(cars[i]);
-                break;
-            }
-            if (maxdiff < diff)
-            {
-                maxdiff = diff;
-                maxpos = j;
-            }
-
-            // if (Is_Samegroup(cars[i].road_set, cars_group[j][0].road_set))
-            // {
-            //     inserted = true;
-            //     cars_group[j].push_back(cars[i]);
-            //     break;
-            // }
-        }
-        if (inserted == false)
-        {
-            cars_group[maxpos].push_back(cars[i]);
-        }
-
-        // if(inserted==false)//没有找到同类，则新开一个组
-        // {
-        //  //   std::cout<<"new"<<std::endl;
-        //     cars_group.push_back(v0);
-        //     cars_group[cars_group.size()-1].push_back(cars[i]);
-        // }
     }
-
-    return 0;
+    else
+    {
+        std::cout << "error divide group" << std::endl;
+        return -1;
+    }
 }
 
 bool IsAlmostEqual(double x, double y)
@@ -177,6 +121,19 @@ int Get_Road_by_Two_crossid(int cross_src_id, int cross_dst_id)
     std::cout << std::endl
               << cross_src_id << " " << cross_dst_id << "Get_Road_by_Two_crossid error" << std::endl;
     return 0;
+}
+
+int Car_findpos_by_id(int carid)
+{
+    if (carid == -1)
+        return -1;
+    static std::unordered_map<int, int> map; //使用unordered_map存储
+    if (map.empty())
+    {
+        for (int i = 0; i < Car::Cars.size(); i++)
+            map[Car::Cars[i].id] = i;
+    }
+    return map[carid];
 }
 
 int Road_findpos_by_id(int roadid)

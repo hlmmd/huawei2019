@@ -37,8 +37,10 @@ int main(int argc, char *argv[])
 	ReadCross(Cross::Crosses, crossPath);
 
 	//在去除单项路之前计算每个路口的车道总数
+
+	int channel_total = 0;
 	for (auto &cross : Cross::Crosses)
-		cross.Cal_road_channel_num();
+		channel_total += cross.Cal_road_channel_num();
 
 	for (auto &cross : Cross::Crosses)
 		cross.RemoveSingleRoad();
@@ -57,16 +59,74 @@ int main(int argc, char *argv[])
 	{
 		//	car.Display();
 		//car.start_time = time;
-		time += car.CalDijkstraPath();
+		car.dj_time = car.CalDijkstraPath();
+		time += car.dj_time;
 		car.set_dir_type();
 		//	std::cout<<time<<" ";
 		//		car.Display();
 		//std::cout<<car.road_seq.size()<<" ";
 	}
 
+	std::vector<std::vector<Car>> Cars_group(4);
+
+	Divide_Group(Cars_group);
+
+	//当前地图最大出发时间为10，直接将初始调度时间设置为10，则不需要考虑出发时间的影响。
+
 	
 
+	int schdule_time = 10;
+	int delta_time = 2;
+	//	int relax_time = time / Car::Cars.size();
 
+	int div = sqrt(Cross::Crosses.size()) / delta_time;
+	//	int div = sqrt(channel_total)/delta_time;
+	//	int div = sqrt(channel_total) * delta_time/2;
+	for (int n = 0; n < 4; n++)
+	{
+		int start_index = 0;
+		//std::cout<<Cars_group[n].size()<<std::endl;
+		int t = 0;
+		for (auto car : Cars_group[n])
+			t += car.dj_time;
+
+		int totalnum_of_roads = 0;
+
+		for (auto car : Cars_group[n])
+			totalnum_of_roads += car.road_seq.size();
+		
+		totalnum_of_roads/= (Cars_group[n].size());
+		//totalnum_of_roads--;
+		int relax_time = t / Cars_group[n].size();
+
+		while (!finish_start_group(Cars_group[n]))
+		{
+			//static int div = sqrt(Cross::Crosses.size())/delta_time;
+			//int start_per_time = Cars_group[n].size()/relax_time/div ;
+			int start_per_time = Cars_group[n].size() / relax_time / totalnum_of_roads *delta_time ;
+		 	//start_per_time-=delta_time;
+			//	int start_per_time = Cars_group[n].size() / div / delta_time;
+			//int start_per_time = div;
+			//int start_per_time = Cars_group[n].size()/relax_time/delta_time ;
+
+			for (int x = 0; x < start_per_time && start_index < Cars_group[n].size(); x++, start_index++)
+			{
+				Cars_group[n][start_index].started = true;
+				Cars_group[n][start_index].start_time = schdule_time;
+
+				if (Car::Cars[Car_findpos_by_id(Cars_group[n][start_index].id)].start_time + 9 < schdule_time)
+					Car::Cars[Car_findpos_by_id(Cars_group[n][start_index].id)].start_time = schdule_time - 9;
+				else
+					Car::Cars[Car_findpos_by_id(Cars_group[n][start_index].id)].start_time += (schdule_time - 9);
+			}
+			//for(int i=0;i<Cars_group[n].size();)
+		//	std::cout << schdule_time << std::endl;
+			schdule_time += delta_time;
+		}
+		//for(int j = 0;j<Cars_group[i].size();j++)
+		; //	Cars_group[i][j].Display();
+		schdule_time += relax_time *1.45;
+	}
 
 	/*发现没有必要重新计算。
 

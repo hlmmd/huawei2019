@@ -13,3 +13,5 @@ build/
 bin/
 CodeCraft-code.tar.gz
 #answer.txt
+judge/
+simulator*

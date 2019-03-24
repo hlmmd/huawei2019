@@ -110,20 +110,25 @@ int Car::ReadCar(const std::string car_infostr)
 
     dir_type = -1;
     is_dir_type_set = false;
+    started = false;
+
+    dj_time = 0;
 
     return 0;
 }
 
 void Car::Display()
 {
-    //   std::cout << id << " " << src << " " << dst << " " << maxspeed << " " << start_time << std::endl;
+  //  std::cout << id << " " << src << " " << dst << " " << maxspeed << " " << start_time << is_dir_type_set << " " << std::endl;
+  std::cout <<is_dir_type_set << " "<<maxspeed<<" "<<start_time << std::endl;
 
-    for (int i = 0; i < road_seq.size(); i++)
-        std::cout << road_seq[i] << " ";
-    std::cout << std::endl;
-    for (int i = 0; i < dir_seq.size(); i++)
-        std::cout << dir_seq[i] << " ";
-    std::cout << std::endl;
+
+    // for (int i = 0; i < road_seq.size(); i++)
+    //     std::cout << road_seq[i] << " ";
+    // std::cout << std::endl;
+    // for (int i = 0; i < dir_seq.size(); i++)
+    //     std::cout << dir_seq[i] << " ";
+    // std::cout << std::endl;
 }
 
 int Car::getpath(std::vector<int> &path, int src_cross, int dst_cross)
@@ -288,7 +293,7 @@ int Car::CalDijkstraPath_withdir()
        
 
           //  std::cout << minpos << "AAA" << std::endl;
-          
+
         //一遍循环后，得到一个最小的dist值，这个值必定对应到一个结点的最小路径
         for (int ii = 0; ii < 2; ii++)
         {

@@ -22,8 +22,15 @@ public:
     //车的行驶方向。分为东北、西北、东南、西南四种方向，根据最短路径确定一个方向。
     //再根据方向重新计算最短路径，如果不存在则重新确定方向。
     
+    //存储dj算法的时间
+    int dj_time ;
+
     std::vector<int> dir_seq;
     bool is_dir_type_set;
+
+    //是否启动
+    bool started = false;
+
     int dir_type ;
 
 public:
