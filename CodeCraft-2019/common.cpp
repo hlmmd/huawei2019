@@ -10,9 +10,8 @@ double Cal_difference(std::set<int> &a, std::set<int> &b)
     // std::set<int> d;
     // set_intersection(a.begin(), a.end(), b.begin(), b.end(), inserter(d, d.begin()));
 
+    //  std::cout<<" AAAAAA "<<(double)a.size() / c.size()<<std::endl;
 
-  //  std::cout<<" AAAAAA "<<(double)a.size() / c.size()<<std::endl;
-    
     return (double)a.size() / c.size();
 }
 
@@ -59,31 +58,31 @@ int Divide_Group(std::vector<Car> &cars, std::vector<std::vector<Car>> &cars_gro
     {
         bool inserted = false;
         int maxpos = -1;
-        double maxdiff=-1;
+        double maxdiff = -1;
         for (int j = 0; j < cars_group.size(); j++)
         {
             double diff = 0;
-            for (int k = 0;k<10 && k < cars_group[j].size(); k++)
+            for (int k = 0; k < 10 && k < cars_group[j].size(); k++)
             {
-           //     std::cout<<diff<<std::endl;
-                diff += Cal_difference(cars[i].road_set, cars_group[j][rand()%cars_group[j].size()].road_set);
+                //     std::cout<<diff<<std::endl;
+                diff += Cal_difference(cars[i].road_set, cars_group[j][rand() % cars_group[j].size()].road_set);
             }
 
-            diff /= std::min((int) cars_group[j].size(),10);
-       //     std::cout<<diff<<std::endl;
+            diff /= std::min((int)cars_group[j].size(), 10);
+            //     std::cout<<diff<<std::endl;
 
             if (Is_newgroup(diff))
             {
-                std::cout<<"new group"<<std::endl;
+                std::cout << "new group" << std::endl;
                 inserted = true;
                 cars_group.push_back(v0);
                 cars_group[cars_group.size() - 1].push_back(cars[i]);
                 break;
             }
-            if(maxdiff<diff)
+            if (maxdiff < diff)
             {
-                maxdiff=diff;
-                maxpos=j;
+                maxdiff = diff;
+                maxpos = j;
             }
 
             // if (Is_Samegroup(cars[i].road_set, cars_group[j][0].road_set))
@@ -93,7 +92,7 @@ int Divide_Group(std::vector<Car> &cars, std::vector<std::vector<Car>> &cars_gro
             //     break;
             // }
         }
-        if(inserted==false)
+        if (inserted == false)
         {
             cars_group[maxpos].push_back(cars[i]);
         }
@@ -121,7 +120,7 @@ bool IsAlmostEqual(double x, double y)
     }
 }
 
-int Get_Road_by_Two_crossid( int cross_src_id, int cross_dst_id)
+int Get_Road_by_Two_crossid(int cross_src_id, int cross_dst_id)
 {
     int pos = Cross_findpos_by_id(cross_src_id);
 
@@ -141,7 +140,7 @@ int Get_Road_by_Two_crossid( int cross_src_id, int cross_dst_id)
     return 0;
 }
 
-int Road_findpos_by_id( int roadid)
+int Road_findpos_by_id(int roadid)
 {
     if (roadid == -1)
         return -1;
