@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
 		std::vector<std::vector<Car>> Cars_speed_group;
 		Divide_speed_Group(Cars_group[n], Cars_speed_group);
 
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < Cars_speed_group.size(); i++)
 		{
 			int started_car_nums = 0;
 
