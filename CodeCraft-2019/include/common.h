@@ -15,6 +15,8 @@ class Car;
 class Road;
 class Cross;
 
+int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car>> &cars_speed_group);
+
 bool finish_start_group(std::vector<Car> &cars);
 
 //求一个数组中出现次数最多的前K个数  leetcode 347

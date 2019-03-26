@@ -46,6 +46,83 @@ bool finish_start_group(std::vector<Car> &cars)
     return true;
 }
 
+int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car>> &cars_speed_group)
+{
+    std::vector<Car> empty;
+    for (auto car : cars_group)
+    {
+        int i = 0;
+        for (; i < cars_speed_group.size(); i++)
+        {
+            if (cars_speed_group[i][0].maxspeed == car.maxspeed)
+            {
+                cars_speed_group[i].push_back(car);
+                break;
+            }
+        }
+
+        if (i == cars_speed_group.size())
+        {
+            cars_speed_group.push_back(empty);
+            cars_speed_group[i].push_back(car);
+        }
+    }
+
+    // for(int i = 0 ;i<cars_speed_group.size();i++)
+    // {
+    //     for(int j =0;j<cars_speed_group[i].size();j++)
+    //     std::cout<<cars_speed_group[i][j].maxspeed<<std::endl;
+    // }
+
+    for (auto &groups : cars_speed_group)
+    {
+        auto comp = [](Car car1, Car car2) {
+         
+
+            // if (car1.is_dir_type_set == car2.is_dir_type_set)
+            //     return car1.dj_time < car2.dj_time;
+            return car1.is_dir_type_set < car2.is_dir_type_set;
+            //return car1.maxspeed > car2.maxspeed;
+        };
+
+        std::sort(groups.begin(), groups.end(), comp);
+    }
+
+    //  exit(0);
+    return 0;
+    // for (auto &groups : cars_speed_group)
+    // {
+    //     auto comp = [](Car car1, Car car2) {
+    //         if (car1.is_dir_type_set == car2.is_dir_type_set)
+    //         {
+    //             //暂不考虑计划出发时间的影响
+    //             // if (car1.start_time == car2.start_time)
+    //             //     return car1.maxspeed > car2.maxspeed;
+    //             return car1.maxspeed > car2.maxspeed;
+    //         }
+    //         else
+    //             return car1.is_dir_type_set > car2.is_dir_type_set;
+    //     };
+
+    //     std::sort(groups.begin(), groups.end(), comp);
+    // }
+
+    // int count = 0;
+    // for (int i = 0; i < 4; i++)
+    // {
+    //     count += cars_group[i].size();
+    // }
+    // if (count == Car::Cars.size())
+    // {
+    //     return 0;
+    // }
+    // else
+    // {
+    //     std::cout << "error divide group" << std::endl;
+    //     return -1;
+    // }
+}
+
 int Divide_Group(std::vector<std::vector<Car>> &cars_group)
 {
     for (auto car : Car::Cars)
@@ -61,15 +138,16 @@ int Divide_Group(std::vector<std::vector<Car>> &cars_group)
     for (auto &groups : cars_group)
     {
         auto comp = [](Car car1, Car car2) {
-            if (car1.is_dir_type_set == car2.is_dir_type_set)
-            {
-                //暂不考虑计划出发时间的影响
-                // if (car1.start_time == car2.start_time)
-                //     return car1.maxspeed > car2.maxspeed;
-                return car1.maxspeed > car2.maxspeed;
-            }
-            else
-                return car1.is_dir_type_set > car2.is_dir_type_set;
+            return car1.maxspeed > car2.maxspeed;
+            // if (car1.is_dir_type_set == car2.is_dir_type_set)
+            // {
+            //     //暂不考虑计划出发时间的影响
+            //     // if (car1.start_time == car2.start_time)
+            //     //     return car1.maxspeed > car2.maxspeed;
+            //     return car1.maxspeed > car2.maxspeed;
+            // }
+            // else
+            //     return car1.is_dir_type_set > car2.is_dir_type_set;
         };
 
         std::sort(groups.begin(), groups.end(), comp);

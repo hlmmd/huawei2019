@@ -287,6 +287,7 @@ int Car::CalDijkstraPath_withdir()
         {
             // std::cout<<"AAA"<<std::endl;
             getpath(path, Cross_findpos_by_id(src), Cross_findpos_by_id(dst));
+            dj_time =  dist[minpos];
             return dist[minpos];
         }
 
@@ -434,6 +435,7 @@ int Car::CalDijkstraPath()
         {
             // std::cout<<"AAA"<<std::endl;
             getpath(path, Cross_findpos_by_id(src), Cross_findpos_by_id(dst));
+            dj_time =  dist[minpos];
             return dist[minpos];
         }
 
