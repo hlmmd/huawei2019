@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 			else if (j == 2)
 				schdule_time += car_djtime_avg / 6;
 			else if (j == 3)
-				schdule_time += car_djtime_avg / 3;
+				schdule_time += car_djtime_avg / 2.5;
 		 	//schdule_time += car_djtime_avg / 16;
 		}
 	}
