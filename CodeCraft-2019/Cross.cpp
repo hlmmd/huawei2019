@@ -297,7 +297,7 @@ bool Cross::isConflict(int fromA, int directionA, int fromB, int directionB)
 
 void Simulation::step()
 {
-    cout << "time: " << Time << endl;
+    //   cout << "time: " << Time << endl;
     for (int crossId : CrossNameSpace)
         CrossDict[crossId]->setDone(false);
     for (int road : RoadNameSpace)
@@ -334,8 +334,9 @@ void Simulation::step()
     }
 }
 
-void Simulation::simulate()
+int Simulation::simulate()
 {
+    Time = 0;
     while (1)
     {
         this->step();
@@ -351,6 +352,7 @@ void Simulation::simulate()
         }
         Time++;
     }
+    return Time;
 }
 
 //end

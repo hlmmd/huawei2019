@@ -47,7 +47,6 @@ int main(int argc, char *argv[])
 	}
 
 	//在去除单项路之前计算每个路口的车道总数
-
 	int channel_total = 0;
 	for (auto &cross : Cross::Crosses)
 		channel_total += cross.Cal_road_channel_num();
@@ -163,6 +162,8 @@ int main(int argc, char *argv[])
 	{
 		for (int i = 0; i < Dir_group_size; i++)
 		{
+			//std::cout << Cars_dir_speed_group[i][j].size() <<" " <<Cars_dir_speed_group[i][j][0].maxspeed << std::endl;
+			//continue;
 			int started_car_nums = 0;
 			//计算这些车的平均用时，作为relax_time，表示跑完发完一轮车
 			int t = 0;
@@ -187,6 +188,8 @@ int main(int argc, char *argv[])
 				//当前车辆组中未发车的数量
 				int cars_size = Cars_dir_speed_group[i][j].size() - started_car_nums;
 
+				car_djtime_avg = 0;
+				car_roadnum_avg = 0;
 				int cc = 0;
 				for (auto car : Cars_dir_speed_group[i][j])
 				{
@@ -197,39 +200,34 @@ int main(int argc, char *argv[])
 						car_roadnum_avg += car.road_seq.size();
 					}
 				}
-				//std::cout << cars_size <<" " <<cc << std::endl;
-				car_djtime_avg /= cars_size;
-				car_roadnum_avg /= cars_size;
 
+				car_roadnum_avg /= cars_size;
 				int div = 4; //car_speed_avg
-				int start_per_time = (double)car_djtime_avg * Cars_dir_speed_group[i][j][0].maxspeed * delta_time / div;
-				//	int start_per_time = (double)car_djtime_avg * car_djtime_avg * Cars_dir_speed_group[i][j][0].maxspeed * delta_time / min_dj_time /car_speed_avg;
-				if (start_per_time < relax_time)
-					start_per_time = relax_time;
+				int start_per_time = (double)car_djtime_avg / cars_size * Cars_dir_speed_group[i][j][0].maxspeed / div;
+				//start_per_time+= Cars_dir_speed_group[i][j][0].maxspeed/4;
+				car_djtime_avg /= cars_size;
+
 				for (int x = 0; x < start_per_time && started_car_nums < Cars_dir_speed_group[i][j].size(); x++, started_car_nums++)
 				{
 					Cars_dir_speed_group[i][j][started_car_nums].started = true;
 					Cars_dir_speed_group[i][j][started_car_nums].start_time = schdule_time;
 					Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][started_car_nums].id)].start_time = (schdule_time);
 				}
-				//	std::cout << start_per_time << " " << schdule_time << std::endl;
 				schdule_time += delta_time;
 			}
-
-			//schdule_time += car_djtime_avg  / car_speed[j];
+			//	schdule_time += car_djtime_avg / car_speed[j]/1.5;
 			if (j == 0)
-				schdule_time += car_djtime_avg / 16;
+				schdule_time += car_djtime_avg / 12;
 			else if (j == 1)
 				schdule_time += car_djtime_avg / 12;
 			else if (j == 2)
 				schdule_time += car_djtime_avg / 6;
 			else if (j == 3)
-				schdule_time += car_djtime_avg / 2.5;
+				schdule_time += car_djtime_avg / 6;
 			//schdule_time += car_djtime_avg / 16;
 		}
 	}
-
-	std::cout << time << std::endl;
+	//	std::cout << time << std::endl;
 
 	auto comp2 = [](Car car1, Car car2) { return car1.id < car2.id; };
 	std::sort(Car::Cars.begin(), Car::Cars.end(), comp2);
@@ -277,12 +275,13 @@ int main(int argc, char *argv[])
 
 	//运行判题器
 	Simulation s;
-	s.simulate();
+	int simulate_time = s.simulate();
+	std::cout << "time: " << simulate_time << std::endl;
 	//end
 
 	gettimeofday(&end, NULL);
 	diff = 1000000 * (end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec;
-	std::cout << diff << std::endl;
+	std::cout << "program total run time: " << diff << std::endl;
 
 	// TODO:read input filebuf
 	// TODO:process
