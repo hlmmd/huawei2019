@@ -1,3 +1,8 @@
+
+#include <sstream>
+#include <climits> //INT_MAX
+#include <unistd.h>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -15,7 +20,7 @@ class Car;
 class Road;
 class Cross;
 
-int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car>> &cars_speed_group);
+int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car>> &cars_speed_group ,std::vector<int> &car_speed);
 
 bool finish_start_group(std::vector<Car> &cars);
 

@@ -46,27 +46,56 @@ bool finish_start_group(std::vector<Car> &cars)
     return true;
 }
 
-int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car>> &cars_speed_group)
+int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car>> &cars_speed_group, std::vector<int> &car_speed)
 {
     std::vector<Car> empty;
+    for (int i = 0; i < car_speed.size(); i++)
+        cars_speed_group.push_back(empty);
+
     for (auto car : cars_group)
     {
-        int i = 0;
-        for (; i < cars_speed_group.size(); i++)
+        for (int i = 0; i < car_speed.size(); i++)
         {
-            if (cars_speed_group[i][0].maxspeed == car.maxspeed)
+            if (car_speed[i] == car.maxspeed)
             {
                 cars_speed_group[i].push_back(car);
                 break;
             }
         }
-
-        if (i == cars_speed_group.size())
-        {
-            cars_speed_group.push_back(empty);
-            cars_speed_group[i].push_back(car);
-        }
     }
+
+    for (auto &groups : cars_speed_group)
+    {
+        auto comp = [](Car car1, Car car2) {
+            // if (car1.is_dir_type_set == car2.is_dir_type_set)
+            //     return car1.dj_time < car2.dj_time;
+            return car1.is_dir_type_set < car2.is_dir_type_set;
+            //return car1.maxspeed > car2.maxspeed;
+        };
+
+        std::sort(groups.begin(), groups.end(), comp);
+    }
+
+    return 0;
+
+    // for (auto car : cars_group)
+    // {
+    //     int i = 0;
+    //     for (; i < cars_speed_group.size(); i++)
+    //     {
+    //         if (cars_speed_group[i][0].maxspeed == car.maxspeed)
+    //         {
+    //             cars_speed_group[i].push_back(car);
+    //             break;
+    //         }
+    //     }
+
+    //     if (i == cars_speed_group.size())
+    //     {
+    //         cars_speed_group.push_back(empty);
+    //         cars_speed_group[i].push_back(car);
+    //     }
+    // }
 
     // for(int i = 0 ;i<cars_speed_group.size();i++)
     // {
@@ -77,8 +106,6 @@ int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car
     for (auto &groups : cars_speed_group)
     {
         auto comp = [](Car car1, Car car2) {
-         
-
             // if (car1.is_dir_type_set == car2.is_dir_type_set)
             //     return car1.dj_time < car2.dj_time;
             return car1.is_dir_type_set < car2.is_dir_type_set;
