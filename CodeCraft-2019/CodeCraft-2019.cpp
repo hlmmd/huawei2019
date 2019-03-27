@@ -106,11 +106,6 @@ int main(int argc, char *argv[])
 				car.is_dir_type_set = true;
 				time += ret;
 			}
-
-			// for (int i = 0; i < car.dir_seq.size(); i++)
-			// {
-			// 	std::cout << car.dir_seq[i] << " ";
-			// }
 		}
 	}
 
@@ -121,22 +116,20 @@ int main(int argc, char *argv[])
 	//根据行驶方向分成四个组
 	Divide_Group(Cars_group);
 
-
 	//统计所有车的车速，并降序排列
 	int car_speed_avg = 0;
 	std::vector<int> car_speed;
 	for (auto car : Car::Cars)
 	{
-		car_speed_avg+=car.maxspeed;
+		car_speed_avg += car.maxspeed;
 		if (std::find(car_speed.begin(), car_speed.end(), car.maxspeed) == car_speed.end())
 			car_speed.push_back(car.maxspeed);
 	}
-	car_speed_avg/=Car::Cars.size();
+	car_speed_avg /= Car::Cars.size();
 	auto comp_speed = [](int s1, int s2) { return s1 > s2; };
 	std::sort(car_speed.begin(), car_speed.end(), comp_speed);
 	// for (int i = 0; i < car_speed.size(); i++)
 	// 	std::cout << car_speed[i] << std::endl;
-
 
 	//根据车速再分组，车速快的最先发车，再发慢的。最大化利用车速优势。
 	std::vector<std::vector<std::vector<Car>>> Cars_dir_speed_group;
@@ -145,17 +138,17 @@ int main(int argc, char *argv[])
 	{
 		std::vector<int> map(Dir_group_size, 0);
 		map[0] = 0, map[1] = 2, map[2] = 1, map[3] = 3;
-		std::vector<std::vector<Car>> Cars_speed_group ;
-		Divide_speed_Group(Cars_group[map[n]], Cars_speed_group ,car_speed );
+		std::vector<std::vector<Car>> Cars_speed_group;
+		Divide_speed_Group(Cars_group[map[n]], Cars_speed_group, car_speed);
 		Cars_dir_speed_group.push_back(Cars_speed_group);
 	}
 
 	//当前地图最大出发时间为10，直接将初始调度时间设置为10，则不需要考虑出发时间的影响。
-	
+
 	int max_start_time = Car::Cars[0].start_time;
-	for (auto car: Car::Cars)
+	for (auto car : Car::Cars)
 	{
-		if(max_start_time<car.start_time)
+		if (max_start_time < car.start_time)
 			max_start_time = car.start_time;
 	}
 	int schdule_time = max_start_time;
@@ -170,161 +163,85 @@ int main(int argc, char *argv[])
 
 	for (int j = 0; j < car_speed.size(); j++)
 	{
-		for (int i = 0; i < Dir_group_size; i++)
+
+		int car_djtime_avg = 0;
+		int car_roadnum_avg = 0;
+
+		//每次发两组，东北方向车和西南方向车不会发生死锁，同时发车。增加切换方向时的间隔、切换速度间隔
+		for (int n = 0; n < 2; n++)
 		{
-			//std::cout << Cars_dir_speed_group[i][j].size() <<" " <<Cars_dir_speed_group[i][j][0].maxspeed << std::endl;
-			//continue;
-			int started_car_nums = 0;
-			//计算这些车的平均用时，作为relax_time，表示跑完发完一轮车
-			int t = 0;
-			for (auto car : Cars_dir_speed_group[i][j])
-			{
-				if (car.started == false)
-					t += car.dj_time;
-			}
-			int relax_time = t / Cars_dir_speed_group[i][j].size();
-			int car_djtime_avg = 0;
-			int car_roadnum_avg = 0;
+			int temp_schdule = schdule_time;
+			int max_sc_time = 0;
 
-			int min_dj_time = INT_MAX;
-			for (auto car : Cars_dir_speed_group[i][j])
+			for (int i = 2 * n; i < 2 * n + 2; i++)
 			{
-				if (car.dj_time < min_dj_time)
-					min_dj_time = car.dj_time;
-			}
-
-			while (!finish_start_group(Cars_dir_speed_group[i][j]))
-			{
-				//当前车辆组中未发车的数量
-				int cars_size = Cars_dir_speed_group[i][j].size() - started_car_nums;
-
-				int cc = 0;
+				schdule_time = temp_schdule;
+				int started_car_nums = 0;
+				//计算这些车的平均用时，作为relax_time，表示跑完发完一轮车
+				int t = 0;
 				for (auto car : Cars_dir_speed_group[i][j])
 				{
 					if (car.started == false)
-					{
-						cc++;
-						car_djtime_avg += car.dj_time;
-						car_roadnum_avg += car.road_seq.size();
-					}
+						t += car.dj_time;
 				}
-				//std::cout << cars_size <<" " <<cc << std::endl;
-				car_djtime_avg /= cars_size;
-				car_roadnum_avg /= cars_size;
 
-				int div = 4;//car_speed_avg
-				int start_per_time = (double)car_djtime_avg  * Cars_dir_speed_group[i][j][0].maxspeed * delta_time /div;
-			//	int start_per_time = (double)car_djtime_avg * car_djtime_avg * Cars_dir_speed_group[i][j][0].maxspeed * delta_time / min_dj_time /car_speed_avg;
-				if (start_per_time < relax_time)
-					start_per_time = relax_time;
-				for (int x = 0; x < start_per_time && started_car_nums < Cars_dir_speed_group[i][j].size(); x++, started_car_nums++)
+				int relax_time = t / Cars_dir_speed_group[i][j].size();
+
+				int min_dj_time = INT_MAX;
+				for (auto car : Cars_dir_speed_group[i][j])
 				{
-					Cars_dir_speed_group[i][j][started_car_nums].started = true;
-					Cars_dir_speed_group[i][j][started_car_nums].start_time = schdule_time;
-					Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][started_car_nums].id)].start_time = (schdule_time);
+					if (car.dj_time < min_dj_time)
+						min_dj_time = car.dj_time;
 				}
-			//	std::cout << start_per_time << " " << schdule_time << std::endl;
-				schdule_time += delta_time;
+
+				while (!finish_start_group(Cars_dir_speed_group[i][j]))
+				{
+					//当前车辆组中未发车的数量
+					int cars_size = Cars_dir_speed_group[i][j].size() - started_car_nums;
+					car_djtime_avg = 0;
+					car_roadnum_avg = 0;
+
+					int cc = 0;
+					for (auto car : Cars_dir_speed_group[i][j])
+					{
+						if (car.started == false)
+						{
+							cc++;
+							car_djtime_avg += car.dj_time;
+							car_roadnum_avg += car.road_seq.size();
+						}
+					}
+					//玄学调参
+					int div = 4; //car_speed_avg
+					int start_per_time = (double)car_djtime_avg / cars_size * car_speed[j] * delta_time / div;
+
+					car_djtime_avg /= cars_size;
+					car_roadnum_avg /= cars_size;
+
+					for (int x = 0; x < start_per_time && started_car_nums < Cars_dir_speed_group[i][j].size(); x++, started_car_nums++)
+					{
+						Cars_dir_speed_group[i][j][started_car_nums].started = true;
+						Cars_dir_speed_group[i][j][started_car_nums].start_time = schdule_time;
+						Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][started_car_nums].id)].start_time = (schdule_time);
+					}
+					std::cout << Cars_dir_speed_group[i][j][0].dir_type << " " << start_per_time << " " << car_djtime_avg << " " << schdule_time << std::endl;
+					schdule_time += delta_time;
+				}
+				max_sc_time = std::max(max_sc_time, schdule_time);
+				//		if (i == 1)
+				//		 	schdule_time += car_djtime_avg;
+				//schdule_time += car_djtime_avg / car_speed[j];
 			}
-
-			//schdule_time += car_djtime_avg  / car_speed[j];		
-			if (j == 0)
-				schdule_time += car_djtime_avg / 16;
-			else if (j == 1)
-				schdule_time += car_djtime_avg / 12;
-			else if (j == 2)
-				schdule_time += car_djtime_avg / 6;
-			else if (j == 3)
-				schdule_time += car_djtime_avg / 2.5;
-			//schdule_time += car_djtime_avg / 16;
+			schdule_time = max_sc_time;
+			//切换方向时增加间隔
+			if (n == 0)
+				schdule_time += car_djtime_avg / car_speed[j] * 2;
+			// temp_schdule = schdule_time;
+			// max_sc_time = 0;
 		}
+		//切换速度时增加间隔
+		schdule_time += car_djtime_avg * 1.2;
 	}
-
-	// for (int n = 0; n < 4; n++)
-	// {
-	// 	std::vector<std::vector<Car>> Cars_speed_group;
-	// 	Divide_speed_Group(Cars_group[n], Cars_speed_group);
-
-	// 	for (int i = 0; i < 4; i++)
-	// 	{
-	// 		int started_car_nums = 0;
-
-	// 		//计算这些车的平均用时，作为relax_time，表示跑完发完一轮车
-	// 		int t = 0;
-	// 		for (auto car : Cars_speed_group[i])
-	// 		{
-	// 			if (car.started == false)
-	// 				t += car.dj_time;
-	// 		}
-	// 		int relax_time = t / Cars_speed_group[i].size();
-	// 		int car_djtime_avg = 0;
-	// 		int car_roadnum_avg = 0;
-	// 		while (!finish_start_group(Cars_speed_group[i]))
-	// 		{
-	// 			//当前车辆组中未发车的数量
-	// 			int cars_size = Cars_speed_group[i].size() - started_car_nums;
-
-	// 			int cc = 0;
-	// 			for (auto car : Cars_speed_group[i])
-	// 			{
-	// 				if (car.started == false)
-	// 				{
-	// 					cc++;
-	// 					car_djtime_avg += car.dj_time;
-	// 					car_roadnum_avg += car.road_seq.size();
-	// 				}
-	// 			}
-	// 			//std::cout << cars_size <<" " <<cc << std::endl;
-	// 			car_djtime_avg /= cars_size;
-	// 			car_roadnum_avg /= cars_size;
-	// 			//int start_per_time = (double)Cars_speed_group[i].size() / car_roadnum_avg * delta_time;
-	// 			//int start_per_time = (double)Cars_speed_group[i].size() / car_djtime_avg * delta_time;
-
-	// 			int start_per_time = car_djtime_avg * delta_time;
-	// 			if (start_per_time < relax_time)
-	// 				start_per_time = relax_time;
-	// 			//std::cout << cars_size << " " << start_per_time << std::endl;
-	// 			// if(start_per_time<cars_size)
-	// 			// 	start_per_time = cars_size;
-	// 			//std::cout << cars_size <<" " <<cc <<" " << start_per_time <<" " <<car_djtime_avg<<" "<<car_roadnum_avg<<std::endl;
-	// 			for (int x = 0; x < start_per_time && started_car_nums < Cars_speed_group[i].size(); x++, started_car_nums++)
-	// 			{
-	// 				//std::cout<<"A";
-	// 				Cars_speed_group[i][started_car_nums].started = true;
-	// 				Cars_speed_group[i][started_car_nums].start_time = schdule_time;
-
-	// 				Car::Cars[Car_findpos_by_id(Cars_speed_group[i][started_car_nums].id)].start_time = (schdule_time);
-
-	// 				// if (Car::Cars[Car_findpos_by_id(Cars_group[i][started_car_nums].id)].start_time + 9 < schdule_time)
-	// 				// 	Car::Cars[Car_findpos_by_id(Cars_group[i][started_car_nums].id)].start_time = schdule_time - 9;
-	// 				// else
-	// 				// 	Car::Cars[Car_findpos_by_id(Cars_group[i][started_car_nums].id)].start_time = (schdule_time - 9);
-	// 			}
-	// 			//for(int i=0;i<Cars_group[n].size();)
-	// 			//		std::cout << start_per_time << " " << schdule_time << std::endl;
-	// 			schdule_time += delta_time;
-	// 		}
-
-	// 		if (i == 0)
-	// 			schdule_time += car_djtime_avg / 2;
-	// 		else if (i == 1)
-	// 			schdule_time += car_djtime_avg / 2;
-	// 		else if (i == 2)
-	// 			schdule_time += car_djtime_avg / 2;
-	// 		else if (i == 3)
-	// 			schdule_time += car_djtime_avg / 2;
-
-	// 		// if (i == 0)
-	// 		// 	schdule_time += car_djtime_avg / 8;
-	// 		// else if (i == 1)
-	// 		// 	schdule_time += car_djtime_avg / 4;
-	// 		// else if (i == 2)
-	// 		// 	schdule_time += car_djtime_avg / 2;
-	// 		// else if (i == 3)
-	// 		// 	schdule_time += car_djtime_avg * 1.5;
-	// 	}
-	// 	//schdule_time+= time/Car::Cars.size()*5;
-	// }
 
 	std::cout << time << std::endl;
 
