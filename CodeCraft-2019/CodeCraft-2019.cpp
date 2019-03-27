@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 				car_roadnum_avg /= cars_size;
 				double div = car_speed_avg; //car_speed_avg
 				//int start_per_time = (double)car_djtime_avg / cars_size * Cars_dir_speed_group[i][j][0].maxspeed / div;
-				int start_per_time = (double)relax_time*relax_time/car_djtime_avg * cars_size * Cars_dir_speed_group[i][j][0].maxspeed / div * 2.2;
+				int start_per_time = (double)relax_time*relax_time/car_djtime_avg * cars_size * Cars_dir_speed_group[i][j][0].maxspeed / div * 2.5;
 				car_djtime_avg /= cars_size;
 
 				int start_index = 0;
@@ -243,19 +243,19 @@ int main(int argc, char *argv[])
 					}
 				}
 
-				std::cout << start_per_time << " " << schdule_time << std::endl;
+			//	std::cout << start_per_time << " " << schdule_time << std::endl;
 				schdule_time += delta_time;
 			}
 
-			schdule_time += car_djtime_avg / 4;
-			// if (j == 0)
-			// 	schdule_time += car_djtime_avg / 4;
-			// else if (j == 1)
-			// 	schdule_time += car_djtime_avg / 4;
-			// else if (j == 2)
-			// 	schdule_time += car_djtime_avg / 6;
-			// else if (j == 3)
-			// 	schdule_time += car_djtime_avg / 3;
+			//schdule_time += car_djtime_avg / 6;
+			if (j == 0)
+				schdule_time += car_djtime_avg / 4;
+			else if (j == 1)
+				schdule_time += car_djtime_avg / 6;
+			else if (j == 2)
+				schdule_time += car_djtime_avg / 3.3;
+			else if (j == 3)
+				schdule_time += car_djtime_avg / 3.7;
 			//schdule_time += car_djtime_avg / 16;
 		}
 	}
