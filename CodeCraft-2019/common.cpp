@@ -1,20 +1,212 @@
 #include "common.h"
 
+ std::unordered_map<int, Car*> CarDict;
+ std::unordered_map<int, Road*> RoadDict;
+ std::unordered_map<int, Cross*> CrossDict;
+ std::vector<int> CarNameSpace, RoadNameSpace, CrossNameSpace;
+ int CarDistribution[3] = { 0,0,0 };
+ int Time = 0;
 
 
-int Divide_Group(std::vector<Car> & cars,std::vector< std::vector<Car>> & cars_group,int num_of_group)
+//求一个数组中出现次数最多的前K个数  leetcode 347
+std::vector<int> TopKFrequent(std::vector<int> &nums, int k)
 {
-    
+    std::unordered_map<int, int> m;
 
+    for (auto num : nums)
+        ++m[num];
+    std::vector<std::vector<int>> buckets(nums.size() + 1);
+    for (auto p : m)
+        buckets[p.second].push_back(p.first);
 
-
-    return 0;
+    std::vector<int> ans;
+    for (int i = buckets.size() - 1; i >= 0 && ans.size() < k; --i)
+    {
+        for (int num : buckets[i])
+        {
+            ans.push_back(num);
+            if (ans.size() == k)
+                break;
+        }
+    }
+    return ans;
 }
 
+int Get_next_cross_id(int cross_id, int road_id)
+{
+    int road_pos = Road_findpos_by_id(road_id);
+
+    if (Road::Roads[road_pos].src_cross == cross_id)
+    {
+        return Road::Roads[road_pos].dst_cross;
+    }
+    else
+    {
+        return Road::Roads[road_pos].src_cross;
+    }
+}
+
+bool finish_start_group(std::vector<Car> &cars)
+{
+    for (int i = 0; i < cars.size(); i++)
+        if (cars[i].started == false)
+            return false;
+    return true;
+}
+
+int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car>> &cars_speed_group, std::vector<int> &car_speed)
+{
+    std::vector<Car> empty;
+    for (int i = 0; i < car_speed.size(); i++)
+        cars_speed_group.push_back(empty);
+
+    for (auto car : cars_group)
+    {
+        for (int i = 0; i < car_speed.size(); i++)
+        {
+            if (car_speed[i] == car.maxspeed)
+            {
+                cars_speed_group[i].push_back(car);
+                break;
+            }
+        }
+    }
+
+    for (auto &groups : cars_speed_group)
+    {
+        auto comp = [](Car car1, Car car2) {
+            // if (car1.is_dir_type_set == car2.is_dir_type_set)
+            //     return car1.dj_time < car2.dj_time;
+            return car1.is_dir_type_set < car2.is_dir_type_set;
+            //return car1.maxspeed > car2.maxspeed;
+        };
+
+        std::sort(groups.begin(), groups.end(), comp);
+    }
+
+    return 0;
+
+    // for (auto car : cars_group)
+    // {
+    //     int i = 0;
+    //     for (; i < cars_speed_group.size(); i++)
+    //     {
+    //         if (cars_speed_group[i][0].maxspeed == car.maxspeed)
+    //         {
+    //             cars_speed_group[i].push_back(car);
+    //             break;
+    //         }
+    //     }
+
+    //     if (i == cars_speed_group.size())
+    //     {
+    //         cars_speed_group.push_back(empty);
+    //         cars_speed_group[i].push_back(car);
+    //     }
+    // }
+
+    // for(int i = 0 ;i<cars_speed_group.size();i++)
+    // {
+    //     for(int j =0;j<cars_speed_group[i].size();j++)
+    //     std::cout<<cars_speed_group[i][j].maxspeed<<std::endl;
+    // }
+
+    for (auto &groups : cars_speed_group)
+    {
+        auto comp = [](Car car1, Car car2) {
+            // if (car1.is_dir_type_set == car2.is_dir_type_set)
+            //     return car1.dj_time < car2.dj_time;
+            return car1.is_dir_type_set < car2.is_dir_type_set;
+            //return car1.maxspeed > car2.maxspeed;
+        };
+
+        std::sort(groups.begin(), groups.end(), comp);
+    }
+
+    //  exit(0);
+    return 0;
+    // for (auto &groups : cars_speed_group)
+    // {
+    //     auto comp = [](Car car1, Car car2) {
+    //         if (car1.is_dir_type_set == car2.is_dir_type_set)
+    //         {
+    //             //暂不考虑计划出发时间的影响
+    //             // if (car1.start_time == car2.start_time)
+    //             //     return car1.maxspeed > car2.maxspeed;
+    //             return car1.maxspeed > car2.maxspeed;
+    //         }
+    //         else
+    //             return car1.is_dir_type_set > car2.is_dir_type_set;
+    //     };
+
+    //     std::sort(groups.begin(), groups.end(), comp);
+    // }
+
+    // int count = 0;
+    // for (int i = 0; i < 4; i++)
+    // {
+    //     count += cars_group[i].size();
+    // }
+    // if (count == Car::Cars.size())
+    // {
+    //     return 0;
+    // }
+    // else
+    // {
+    //     std::cout << "error divide group" << std::endl;
+    //     return -1;
+    // }
+}
+
+int Divide_Group(std::vector<std::vector<Car>> &cars_group)
+{
+    for (auto car : Car::Cars)
+    {
+        cars_group[car.dir_type].push_back(car);
+        if (car.dir_type < 0 || car.dir_type > 3)
+        {
+            std::cout << "dir_type error: " << car.dir_type << std::endl;
+            exit(0);
+        }
+    }
+
+    for (auto &groups : cars_group)
+    {
+        auto comp = [](Car car1, Car car2) {
+            return car1.maxspeed > car2.maxspeed;
+            // if (car1.is_dir_type_set == car2.is_dir_type_set)
+            // {
+            //     //暂不考虑计划出发时间的影响
+            //     // if (car1.start_time == car2.start_time)
+            //     //     return car1.maxspeed > car2.maxspeed;
+            //     return car1.maxspeed > car2.maxspeed;
+            // }
+            // else
+            //     return car1.is_dir_type_set > car2.is_dir_type_set;
+        };
+
+        std::sort(groups.begin(), groups.end(), comp);
+    }
+
+    int count = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        count += cars_group[i].size();
+    }
+    if (count == Car::Cars.size())
+    {
+        return 0;
+    }
+    else
+    {
+        std::cout << "error divide group" << std::endl;
+        return -1;
+    }
+}
 
 bool IsAlmostEqual(double x, double y)
 {
-    if (fabs(x - y) < 1e-4)
+    if (fabs(x - y) < 1e-5)
     {
         return true;
     }
@@ -24,17 +216,17 @@ bool IsAlmostEqual(double x, double y)
     }
 }
 
-int Get_Road_by_Two_crossid(std::vector<Road> &roads, std::vector<Cross> &crosses, int cross_src_id, int cross_dst_id)
+int Get_Road_by_Two_crossid(int cross_src_id, int cross_dst_id)
 {
-    int pos = Cross_findpos_by_id(crosses, cross_src_id);
+    int pos = Cross_findpos_by_id(cross_src_id);
 
     for (int i = 0; i < ROADS_OF_CROSS; i++)
     {
-        int road_id = crosses[pos].dir[i];
+        int road_id = Cross::Crosses[pos].dir[i];
         if (road_id != -1)
         {
-            int road_pos = Road_findpos_by_id(roads, road_id);
-            if (roads[road_pos].dst_cross == cross_dst_id || roads[road_pos].is_dup == 1 && roads[road_pos].src_cross == cross_dst_id)
+            int road_pos = Road_findpos_by_id(road_id);
+            if (Road::Roads[road_pos].dst_cross == cross_dst_id || Road::Roads[road_pos].is_dup == 1 && Road::Roads[road_pos].src_cross == cross_dst_id)
                 return road_id;
         }
     }
@@ -44,28 +236,41 @@ int Get_Road_by_Two_crossid(std::vector<Road> &roads, std::vector<Cross> &crosse
     return 0;
 }
 
-int Road_findpos_by_id(std::vector<Road> &roads, int roadid)
+int Car_findpos_by_id(int carid)
+{
+    if (carid == -1)
+        return -1;
+    static std::unordered_map<int, int> map; //使用unordered_map存储
+    if (map.empty())
+    {
+        for (int i = 0; i < Car::Cars.size(); i++)
+            map[Car::Cars[i].id] = i;
+    }
+    return map[carid];
+}
+
+int Road_findpos_by_id(int roadid)
 {
     if (roadid == -1)
         return -1;
     static std::unordered_map<int, int> map; //使用unordered_map存储
     if (map.empty())
     {
-        for (int i = 0; i < roads.size(); i++)
-            map[roads[i].id] = i;
+        for (int i = 0; i < Road::Roads.size(); i++)
+            map[Road::Roads[i].id] = i;
     }
     return map[roadid];
 }
 
-int Cross_findpos_by_id(std::vector<Cross> &crosses, int crossid)
+int Cross_findpos_by_id(int crossid)
 {
     if (crossid == -1)
         return -1;
     static std::unordered_map<int, int> map; //使用unordered_map存储
     if (map.empty())
     {
-        for (int i = 0; i < crosses.size(); i++)
-            map[crosses[i].id] = i;
+        for (int i = 0; i < Cross::Crosses.size(); i++)
+            map[Cross::Crosses[i].id] = i;
     }
     return map[crossid];
 }
@@ -163,9 +368,7 @@ int WriteAnswer(std::vector<Car> &cars, const std::string &answerPath)
         out << car.start_time;
         for (auto road_id : car.road_seq)
             out << ',' << road_id;
-        // for(int i = 0;i<car.road_seq.size()-1;i++)
-        //     out<<car.road_seq[i]<<',';
-        // out<<car.road_seq[car.road_seq.size()-1];
+
         out << ')' << std::endl;
     }
 

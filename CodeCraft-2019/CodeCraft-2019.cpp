@@ -30,37 +30,357 @@ int main(int argc, char *argv[])
 	// std::cout << "crossPath is " << crossPath << std::endl;
 	// std::cout << "answerPath is " << answerPath << std::endl;
 
-	std::vector<Car> cars;
-	ReadCar(cars, carPath);
+	ReadCar(Car::Cars, carPath);
 
-	std::vector<Road> roads;
-	ReadRoad(roads, roadPath);
+	ReadRoad(Road::Roads, roadPath);
 
-	std::vector<Cross> crosses;
-	ReadCross(crosses, crossPath);
+	ReadCross(Cross::Crosses, crossPath);
 
-	for (auto &cross : crosses)
-		cross.RemoveSingleRoad(roads);
-
-	int time = 0;
-
-	auto comp = [](Car car1, Car car2) { return car1.start_time < car2.start_time; };
-	std::sort(cars.begin(), cars.end(), comp);
-	for (auto &car : cars)
-	{
-		//	car.Display();
-		car.start_time += time;
-		time += car.CalDijkstraPath(crosses, roads);
-		//	std::cout<<time<<" ";
-		//		car.Display();
-		//std::cout<<car.road_seq.size()<<" ";
+//zhao
+	for(int i=0; i<Car::Cars.size(); i++){
+		CarNameSpace.push_back(Car::Cars[i].id);
+		CarDict[Car::Cars[i].id] = &Car::Cars[i];
 	}
+
+	for (int i = 0; i<Road::Roads.size(); i++) {
+		RoadNameSpace.push_back(Road::Roads[i].id);
+		RoadDict[Road::Roads[i].id] = &Road::Roads[i];
+	}
+
+	for(int i=0; i<Cross::Crosses.size(); i++){
+		CrossNameSpace.push_back(Cross::Crosses[i].id);
+		CrossDict[Cross::Crosses[i].id] = &Cross::Crosses[i];
+	}
+
+	std::ifstream fin(answerPath, std::ios::in);
+	if (fin){
+		std::string line;
+		while (getline(fin, line)){
+			vector<std::string> res;
+			string result;
+			stringstream ss(line);
+			while (getline(ss, result, ',')){
+				result = num_trim(result);
+				res.push_back(result);
+			}
+
+			int carId = stoi(res[0]);
+			int planTime = stoi(res[1]);
+			vector<int> route;
+			for(int i=2; i<res.size(); i++){
+				route.push_back(stoi(res[i]));
+			}
+			CarDict[carId]->startInit(planTime, route);
+		}
+	}
+	else{
+		std::cout << "open error" << std::endl;
+		return -1;
+	}
+	CarDistribution[0] = CarNameSpace.size();
+	for(int carId : CarNameSpace){
+		CrossDict[CarDict[carId]->src]->carportInital(CarDict[carId]->plane_time, carId);
+	}
+	sort(CarNameSpace.begin(), CarNameSpace.end());
+	sort(CrossNameSpace.begin(), CrossNameSpace.end());
+
+	//end
+
+	//在去除单项路之前计算每个路口的车道总数
+
+	int channel_total = 0;
+	for (auto &cross : Cross::Crosses)
+		channel_total += cross.Cal_road_channel_num();
+
+	for (auto &cross : Cross::Crosses)
+		cross.RemoveSingleRoad();
+
+	int time = 1;
+
+	auto comp = [](Car car1, Car car2) {
+		if (car1.start_time == car2.start_time)
+			return car1.maxspeed > car2.maxspeed;
+		return car1.start_time < car2.start_time;
+	};
+	std::sort(Car::Cars.begin(), Car::Cars.end(), comp);
+
+	//先计算一次最短路径
+	for (auto &car : Car::Cars)
+	{
+		car.dj_time = car.CalDijkstraPath();
+		time += car.dj_time;
+		car.set_dir_type();
+	}
+
+	//在计算过一次最短路径后，重新计算时讲之前的数据清零。
+	for (auto &cross : Cross::Crosses)
+	{
+		cross.cars_pass_num = 0;
+	}
+
+	for (auto &car : Car::Cars)
+	{
+		car.dir_seq.clear();
+		car.road_seq.clear();
+	}
+
+	time = 0;
+	int count = 0;
+	for (auto &car : Car::Cars)
+	{
+
+		if (car.is_dir_type_set)
+		{
+			count++;
+			time += car.CalDijkstraPath_withdir();
+		}
+		else
+		{
+			int ret = -1;
+			//如果没找到路，则更换方向，如果换了3次都没找到，说明出错。
+			for (int i = 0; i < 4; i++)
+			{
+				ret = car.CalDijkstraPath_withdir();
+				if (ret > 0)
+					break;
+				car.get_next_dir_type();
+			}
+			//存在找不到的情况，因为不一定有路，且道路不一定双向。
+			if (ret == -1)
+			{
+				time += car.CalDijkstraPath();
+			}
+			else
+			{
+				count++;
+				car.is_dir_type_set = true;
+				time += ret;
+			}
+
+			// for (int i = 0; i < car.dir_seq.size(); i++)
+			// {
+			// 	std::cout << car.dir_seq[i] << " ";
+			// }
+		}
+	}
+
+	const int Dir_group_size = 4;
+
+	std::vector<std::vector<Car>> Cars_group(Dir_group_size);
+
+	//根据行驶方向分成四个组
+	Divide_Group(Cars_group);
+
+
+	//统计所有车的车速，并降序排列
+	int car_speed_avg = 0;
+	std::vector<int> car_speed;
+	for (auto car : Car::Cars)
+	{
+		car_speed_avg+=car.maxspeed;
+		if (std::find(car_speed.begin(), car_speed.end(), car.maxspeed) == car_speed.end())
+			car_speed.push_back(car.maxspeed);
+	}
+	car_speed_avg/=Car::Cars.size();
+	auto comp_speed = [](int s1, int s2) { return s1 > s2; };
+	std::sort(car_speed.begin(), car_speed.end(), comp_speed);
+	// for (int i = 0; i < car_speed.size(); i++)
+	// 	std::cout << car_speed[i] << std::endl;
+
+
+	//根据车速再分组，车速快的最先发车，再发慢的。最大化利用车速优势。
+	std::vector<std::vector<std::vector<Car>>> Cars_dir_speed_group;
+
+	for (int n = 0; n < Dir_group_size; n++)
+	{
+		std::vector<int> map(Dir_group_size, 0);
+		map[0] = 0, map[1] = 2, map[2] = 1, map[3] = 3;
+		std::vector<std::vector<Car>> Cars_speed_group ;
+		Divide_speed_Group(Cars_group[map[n]], Cars_speed_group ,car_speed );
+		Cars_dir_speed_group.push_back(Cars_speed_group);
+	}
+
+	//当前地图最大出发时间为10，直接将初始调度时间设置为10，则不需要考虑出发时间的影响。
+	
+	int max_start_time = Car::Cars[0].start_time;
+	for (auto car: Car::Cars)
+	{
+		if(max_start_time<car.start_time)
+			max_start_time = car.start_time;
+	}
+	int schdule_time = max_start_time;
+
+	int delta_time = 1;
+	int channel_avg = 0;
+	for (auto road : Road::Roads)
+		channel_avg += road.channel << road.is_dup;
+	channel_avg /= Road::Roads.size();
+
+	//	int div = sqrt(channel_total) * delta_time/2;
+
+	for (int j = 0; j < car_speed.size(); j++)
+	{
+		for (int i = 0; i < Dir_group_size; i++)
+		{
+			//std::cout << Cars_dir_speed_group[i][j].size() <<" " <<Cars_dir_speed_group[i][j][0].maxspeed << std::endl;
+			//continue;
+			int started_car_nums = 0;
+			//计算这些车的平均用时，作为relax_time，表示跑完发完一轮车
+			int t = 0;
+			for (auto car : Cars_dir_speed_group[i][j])
+			{
+				if (car.started == false)
+					t += car.dj_time;
+			}
+			int relax_time = t / Cars_dir_speed_group[i][j].size();
+			int car_djtime_avg = 0;
+			int car_roadnum_avg = 0;
+
+			int min_dj_time = INT_MAX;
+			for (auto car : Cars_dir_speed_group[i][j])
+			{
+				if (car.dj_time < min_dj_time)
+					min_dj_time = car.dj_time;
+			}
+
+			while (!finish_start_group(Cars_dir_speed_group[i][j]))
+			{
+				//当前车辆组中未发车的数量
+				int cars_size = Cars_dir_speed_group[i][j].size() - started_car_nums;
+
+				int cc = 0;
+				for (auto car : Cars_dir_speed_group[i][j])
+				{
+					if (car.started == false)
+					{
+						cc++;
+						car_djtime_avg += car.dj_time;
+						car_roadnum_avg += car.road_seq.size();
+					}
+				}
+				//std::cout << cars_size <<" " <<cc << std::endl;
+				car_djtime_avg /= cars_size;
+				car_roadnum_avg /= cars_size;
+
+				int div = 4;//car_speed_avg
+				int start_per_time = (double)car_djtime_avg  * Cars_dir_speed_group[i][j][0].maxspeed * delta_time /div;
+			//	int start_per_time = (double)car_djtime_avg * car_djtime_avg * Cars_dir_speed_group[i][j][0].maxspeed * delta_time / min_dj_time /car_speed_avg;
+				if (start_per_time < relax_time)
+					start_per_time = relax_time;
+				for (int x = 0; x < start_per_time && started_car_nums < Cars_dir_speed_group[i][j].size(); x++, started_car_nums++)
+				{
+					Cars_dir_speed_group[i][j][started_car_nums].started = true;
+					Cars_dir_speed_group[i][j][started_car_nums].start_time = schdule_time;
+					Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][started_car_nums].id)].start_time = (schdule_time);
+				}
+			//	std::cout << start_per_time << " " << schdule_time << std::endl;
+				schdule_time += delta_time;
+			}
+
+			//schdule_time += car_djtime_avg  / car_speed[j];		
+			if (j == 0)
+				schdule_time += car_djtime_avg / 16;
+			else if (j == 1)
+				schdule_time += car_djtime_avg / 12;
+			else if (j == 2)
+				schdule_time += car_djtime_avg / 6;
+			else if (j == 3)
+				schdule_time += car_djtime_avg / 2.5;
+			//schdule_time += car_djtime_avg / 16;
+		}
+	}
+
+	// for (int n = 0; n < 4; n++)
+	// {
+	// 	std::vector<std::vector<Car>> Cars_speed_group;
+	// 	Divide_speed_Group(Cars_group[n], Cars_speed_group);
+
+	// 	for (int i = 0; i < 4; i++)
+	// 	{
+	// 		int started_car_nums = 0;
+
+	// 		//计算这些车的平均用时，作为relax_time，表示跑完发完一轮车
+	// 		int t = 0;
+	// 		for (auto car : Cars_speed_group[i])
+	// 		{
+	// 			if (car.started == false)
+	// 				t += car.dj_time;
+	// 		}
+	// 		int relax_time = t / Cars_speed_group[i].size();
+	// 		int car_djtime_avg = 0;
+	// 		int car_roadnum_avg = 0;
+	// 		while (!finish_start_group(Cars_speed_group[i]))
+	// 		{
+	// 			//当前车辆组中未发车的数量
+	// 			int cars_size = Cars_speed_group[i].size() - started_car_nums;
+
+	// 			int cc = 0;
+	// 			for (auto car : Cars_speed_group[i])
+	// 			{
+	// 				if (car.started == false)
+	// 				{
+	// 					cc++;
+	// 					car_djtime_avg += car.dj_time;
+	// 					car_roadnum_avg += car.road_seq.size();
+	// 				}
+	// 			}
+	// 			//std::cout << cars_size <<" " <<cc << std::endl;
+	// 			car_djtime_avg /= cars_size;
+	// 			car_roadnum_avg /= cars_size;
+	// 			//int start_per_time = (double)Cars_speed_group[i].size() / car_roadnum_avg * delta_time;
+	// 			//int start_per_time = (double)Cars_speed_group[i].size() / car_djtime_avg * delta_time;
+
+	// 			int start_per_time = car_djtime_avg * delta_time;
+	// 			if (start_per_time < relax_time)
+	// 				start_per_time = relax_time;
+	// 			//std::cout << cars_size << " " << start_per_time << std::endl;
+	// 			// if(start_per_time<cars_size)
+	// 			// 	start_per_time = cars_size;
+	// 			//std::cout << cars_size <<" " <<cc <<" " << start_per_time <<" " <<car_djtime_avg<<" "<<car_roadnum_avg<<std::endl;
+	// 			for (int x = 0; x < start_per_time && started_car_nums < Cars_speed_group[i].size(); x++, started_car_nums++)
+	// 			{
+	// 				//std::cout<<"A";
+	// 				Cars_speed_group[i][started_car_nums].started = true;
+	// 				Cars_speed_group[i][started_car_nums].start_time = schdule_time;
+
+	// 				Car::Cars[Car_findpos_by_id(Cars_speed_group[i][started_car_nums].id)].start_time = (schdule_time);
+
+	// 				// if (Car::Cars[Car_findpos_by_id(Cars_group[i][started_car_nums].id)].start_time + 9 < schdule_time)
+	// 				// 	Car::Cars[Car_findpos_by_id(Cars_group[i][started_car_nums].id)].start_time = schdule_time - 9;
+	// 				// else
+	// 				// 	Car::Cars[Car_findpos_by_id(Cars_group[i][started_car_nums].id)].start_time = (schdule_time - 9);
+	// 			}
+	// 			//for(int i=0;i<Cars_group[n].size();)
+	// 			//		std::cout << start_per_time << " " << schdule_time << std::endl;
+	// 			schdule_time += delta_time;
+	// 		}
+
+	// 		if (i == 0)
+	// 			schdule_time += car_djtime_avg / 2;
+	// 		else if (i == 1)
+	// 			schdule_time += car_djtime_avg / 2;
+	// 		else if (i == 2)
+	// 			schdule_time += car_djtime_avg / 2;
+	// 		else if (i == 3)
+	// 			schdule_time += car_djtime_avg / 2;
+
+	// 		// if (i == 0)
+	// 		// 	schdule_time += car_djtime_avg / 8;
+	// 		// else if (i == 1)
+	// 		// 	schdule_time += car_djtime_avg / 4;
+	// 		// else if (i == 2)
+	// 		// 	schdule_time += car_djtime_avg / 2;
+	// 		// else if (i == 3)
+	// 		// 	schdule_time += car_djtime_avg * 1.5;
+	// 	}
+	// 	//schdule_time+= time/Car::Cars.size()*5;
+	// }
 
 	std::cout << time << std::endl;
 
 	auto comp2 = [](Car car1, Car car2) { return car1.id < car2.id; };
-	std::sort(cars.begin(), cars.end(), comp2);
-	WriteAnswer(cars, answerPath);
+	std::sort(Car::Cars.begin(), Car::Cars.end(), comp2);
+	WriteAnswer(Car::Cars, answerPath);
 
 	gettimeofday(&end, NULL);
 	diff = 1000000 * (end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec;
