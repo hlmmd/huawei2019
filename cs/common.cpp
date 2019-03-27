@@ -1,11 +1,12 @@
 #include "common.h"
 
-std::unordered_map<int, Car *> CarDict;
-std::unordered_map<int, Road *> RoadDict;
-std::unordered_map<int, Cross *> CrossDict;
-std::vector<int> CarNameSpace, RoadNameSpace, CrossNameSpace;
-int CarDistribution[3] = {0, 0, 0};
-int Time = 0;
+ std::unordered_map<int, Car*> CarDict;
+ std::unordered_map<int, Road*> RoadDict;
+ std::unordered_map<int, Cross*> CrossDict;
+ std::vector<int> CarNameSpace, RoadNameSpace, CrossNameSpace;
+ int CarDistribution[3] = { 0,0,0 };
+ int Time = 0;
+
 
 //求一个数组中出现次数最多的前K个数  leetcode 347
 std::vector<int> TopKFrequent(std::vector<int> &nums, int k)
@@ -74,14 +75,87 @@ int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car
     for (auto &groups : cars_speed_group)
     {
         auto comp = [](Car car1, Car car2) {
-            if (car1.is_dir_type_set == car2.is_dir_type_set)
-                return car1.dj_time < car2.dj_time;
+            // if (car1.is_dir_type_set == car2.is_dir_type_set)
+            //     return car1.dj_time < car2.dj_time;
             return car1.is_dir_type_set < car2.is_dir_type_set;
             //return car1.maxspeed > car2.maxspeed;
         };
+
         std::sort(groups.begin(), groups.end(), comp);
     }
+
     return 0;
+
+    // for (auto car : cars_group)
+    // {
+    //     int i = 0;
+    //     for (; i < cars_speed_group.size(); i++)
+    //     {
+    //         if (cars_speed_group[i][0].maxspeed == car.maxspeed)
+    //         {
+    //             cars_speed_group[i].push_back(car);
+    //             break;
+    //         }
+    //     }
+
+    //     if (i == cars_speed_group.size())
+    //     {
+    //         cars_speed_group.push_back(empty);
+    //         cars_speed_group[i].push_back(car);
+    //     }
+    // }
+
+    // for(int i = 0 ;i<cars_speed_group.size();i++)
+    // {
+    //     for(int j =0;j<cars_speed_group[i].size();j++)
+    //     std::cout<<cars_speed_group[i][j].maxspeed<<std::endl;
+    // }
+
+    for (auto &groups : cars_speed_group)
+    {
+        auto comp = [](Car car1, Car car2) {
+            // if (car1.is_dir_type_set == car2.is_dir_type_set)
+            //     return car1.dj_time < car2.dj_time;
+            return car1.is_dir_type_set < car2.is_dir_type_set;
+            //return car1.maxspeed > car2.maxspeed;
+        };
+
+        std::sort(groups.begin(), groups.end(), comp);
+    }
+
+    //  exit(0);
+    return 0;
+    // for (auto &groups : cars_speed_group)
+    // {
+    //     auto comp = [](Car car1, Car car2) {
+    //         if (car1.is_dir_type_set == car2.is_dir_type_set)
+    //         {
+    //             //暂不考虑计划出发时间的影响
+    //             // if (car1.start_time == car2.start_time)
+    //             //     return car1.maxspeed > car2.maxspeed;
+    //             return car1.maxspeed > car2.maxspeed;
+    //         }
+    //         else
+    //             return car1.is_dir_type_set > car2.is_dir_type_set;
+    //     };
+
+    //     std::sort(groups.begin(), groups.end(), comp);
+    // }
+
+    // int count = 0;
+    // for (int i = 0; i < 4; i++)
+    // {
+    //     count += cars_group[i].size();
+    // }
+    // if (count == Car::Cars.size())
+    // {
+    //     return 0;
+    // }
+    // else
+    // {
+    //     std::cout << "error divide group" << std::endl;
+    //     return -1;
+    // }
 }
 
 int Divide_Group(std::vector<std::vector<Car>> &cars_group)
@@ -100,11 +174,34 @@ int Divide_Group(std::vector<std::vector<Car>> &cars_group)
     {
         auto comp = [](Car car1, Car car2) {
             return car1.maxspeed > car2.maxspeed;
+            // if (car1.is_dir_type_set == car2.is_dir_type_set)
+            // {
+            //     //暂不考虑计划出发时间的影响
+            //     // if (car1.start_time == car2.start_time)
+            //     //     return car1.maxspeed > car2.maxspeed;
+            //     return car1.maxspeed > car2.maxspeed;
+            // }
+            // else
+            //     return car1.is_dir_type_set > car2.is_dir_type_set;
         };
 
         std::sort(groups.begin(), groups.end(), comp);
     }
-    return 0;
+
+    int count = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        count += cars_group[i].size();
+    }
+    if (count == Car::Cars.size())
+    {
+        return 0;
+    }
+    else
+    {
+        std::cout << "error divide group" << std::endl;
+        return -1;
+    }
 }
 
 bool IsAlmostEqual(double x, double y)
@@ -204,8 +301,6 @@ int ReadCar(std::vector<Car> &cars, const std::string carPath)
             car.ReadCar(line);
             cars.push_back(car);
         }
-
-        fin.close();
         return 0;
     }
     else
@@ -228,8 +323,6 @@ int ReadRoad(std::vector<Road> &roads, const std::string RoadPath)
             road.ReadRoad(line);
             roads.push_back(road);
         }
-
-        fin.close();
         return 0;
     }
     else
@@ -252,7 +345,6 @@ int ReadCross(std::vector<Cross> &Crosses, const std::string CrossPath)
             cross.ReadCross(line);
             Crosses.push_back(cross);
         }
-        fin.close();
         return 0;
     }
     else
@@ -279,6 +371,7 @@ int WriteAnswer(std::vector<Car> &cars, const std::string &answerPath)
 
         out << ')' << std::endl;
     }
-    out.close();
+
     return 0;
 }
+

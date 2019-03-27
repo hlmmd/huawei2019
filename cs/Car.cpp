@@ -1,8 +1,5 @@
 
 
-#include <unistd.h>
-#include <stdlib.h>
-
 #include "common.h"
 
 //静态成员变量需要声明
@@ -116,6 +113,7 @@ int Car::ReadCar(const std::string car_infostr)
 	wait = false;
 	x = 0, y = 0;
 	routeIndex = -1;
+	changes=0;
 //end
 
 
@@ -523,10 +521,77 @@ int Car::getSpeed(){
     return std::min(maxspeed, RoadDict[curRoad]->getSpeed());
 }
 
-int Car::getNextRoad(){
-	return routeIndex < route.size() ?route[routeIndex] : -1;
+int Car::getNextRoad(){//cs
+    bool debug=false;
+    //return routeIndex < route.size() ?route[routeIndex] : -1;
+    if(this->changes){
+        return routeIndex < route.size() ?route[routeIndex] : -1;
+    }
+    std::vector<int> choose;
+    Optimize optimizer_temp;
+    if(!optimizer_temp.random_change()&&!debug){ //no change
+        return routeIndex < route.size() ?route[routeIndex] : -1;
+    }
+    //change
+    int next_cross_id=this->nextCrossId;
+    int tempint;
+    for(int i2=0;i2<4;i2++) {
+        if (i2 == 0) {
+            tempint = CrossDict[next_cross_id]->down;
+        } else if (i2 == 1) {
+            tempint = CrossDict[next_cross_id]->up;
+        } else if (i2 == 2) {
+            tempint = CrossDict[next_cross_id]->left;
+        } else if (i2 == 3) {
+            tempint = CrossDict[next_cross_id]->right;
+        }
+        if (tempint != -1 &&tempint != ((routeIndex>0)?route[routeIndex-1]:-1)) {
+            choose.push_back(tempint);
+        }
+    }
+    std::vector<double> value_1(choose.size(),0);  //score
+    std::vector<double> value_2(choose.size(),0);  //situation of roads
+    std::vector<double> value_3(choose.size(),0);  //dist
+    std::vector<double> value_res(choose.size(),0);
+    double temp_score=0;
+    for(int i2=0;i2<choose.size();i2++){
+        value_1[i2]=Optimize::scores[Road_findpos_by_id(choose[i2])][Cross_findpos_by_id(this->dst)];
+    }
+    for(int i2=0;i2<choose.size();i2++){
+        value_2[i2]=RoadDict[choose[i2]]->forwardNum;
+    }
+    for(int i2=0;i2<choose.size();i2++){
+        value_3[i2]=Optimize::dist[Cross_findpos_by_id(Road::Roads[Road_findpos_by_id(choose[i2])].dst_cross)][Cross_findpos_by_id(this->dst)];
+        //value_3[i2]=temp_score;
+    }
+    //normalize(value_1);
+    //normalize(value_2);
+    //normalize(value_3);
+    for(int i2=0;i2<choose.size();i2++){
+        value_res[i2]=-(para_v1*value_1[i2]+para_v2*value_2[i2]+para_v3*value_3[i2]);
+    }
+    optimizer_temp.normalize(value_res);
+    optimizer_temp.sort_ops(choose,value_res);
+    int choice=0;
+    for(;choice<choose.size();choice++){
+        if(!routeIndex){
+            break;
+        }
+        if(choose[choice]!=route[routeIndex-1]){
+            break;
+        }
+    }
+    route[routeIndex]=choose[choice];
+    std::vector<int> new_seq;
+    new_seq.assign(route.begin(),route.begin()+routeIndex);
+    for(auto t:Optimize::dist_table[Cross_findpos_by_id(next_cross_id)][Cross_findpos_by_id(this->dst)]){
+        new_seq.push_back(t);
+    }
+    route=new_seq;
+    this->changes++;
+    return route[routeIndex];
+    //xiugai route
 //	return route[routeIndex];
-
 }
 
 //end
