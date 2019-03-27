@@ -15,6 +15,8 @@ class Car
 	int maxspeed;
 	int start_time;
 
+	int reset_start_time;
+
 	std::vector<int> road_seq;
 	std::set<int> road_set;
 

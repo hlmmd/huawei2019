@@ -75,7 +75,12 @@ int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car
     {
         auto comp = [](Car car1, Car car2) {
             if (car1.is_dir_type_set == car2.is_dir_type_set)
+            {
+                // if(car1.dj_time==car2.dj_time)
+                //     return  car1.start_time<car2.start_time;
                 return car1.dj_time < car2.dj_time;
+            }
+
             return car1.is_dir_type_set < car2.is_dir_type_set;
             //return car1.maxspeed > car2.maxspeed;
         };
@@ -135,7 +140,8 @@ int Get_Road_by_Two_crossid(int cross_src_id, int cross_dst_id)
     }
 
     std::cout << std::endl
-              << cross_src_id << " " << cross_dst_id << "Get_Road_by_Two_crossid error" << std::endl;
+              << cross_src_id << " " << cross_dst_id
+              << "Get_Road_by_Two_crossid error" << std::endl;
     return 0;
 }
 

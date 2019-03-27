@@ -336,7 +336,7 @@ void Simulation::step()
         unfinishedCross = nextCross;
         if (this->dead == true)
         {
-            cout << "dead lock " << endl;
+            cout << Time << " dead lock " << endl;
             exit(-1);
         }
     }
@@ -359,13 +359,13 @@ int Simulation::simulate()
         this->step();
         if (CarDistribution[2] == CarNameSpace.size())
         {
-           // cout << CarDistribution[2] << endl;
+            // cout << CarDistribution[2] << endl;
             return Time;
             //return CarDistribution[2];
         }
         if (dead)
         {
-            cout << "dead" << endl;
+            cout << Time << " dead" << endl;
             return -1;
         }
         Time++;

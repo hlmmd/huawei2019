@@ -65,8 +65,11 @@ int Car::get_next_dir_type()
     return dir_type;
 }
 
-int  Car::InitSimulate()
+int Car::InitSimulate()
 {
+
+  //  start_time = reset_start_time;
+
     state = 0;
     plane_time = 0;
     curRoad = -1, nextCrossId = src;
@@ -78,7 +81,6 @@ int  Car::InitSimulate()
     //cs
     changes = 0;
 }
-
 
 int Car::ReadCar(const std::string car_infostr)
 {
@@ -101,6 +103,8 @@ int Car::ReadCar(const std::string car_infostr)
     dst = stoi(res[2]);
     maxspeed = stoi(res[3]);
     start_time = stoi(res[4]);
+
+    reset_start_time = start_time;
 
     dir_type = -1;
     is_dir_type_set = false;
