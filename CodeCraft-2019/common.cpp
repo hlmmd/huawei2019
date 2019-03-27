@@ -81,9 +81,9 @@ int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car
         };
         std::sort(groups.begin(), groups.end(), comp);
     }
-
     return 0;
 }
+
 
 int Divide_Group(std::vector<std::vector<Car>> &cars_group)
 {

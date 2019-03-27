@@ -9,6 +9,11 @@
 #define ROADS_OF_CROSS 4
 class Road;
 
+<<<<<<< HEAD
+=======
+inline size_t key(int i, int j) { return (size_t)i << 32 | (unsigned int)j; }
+
+>>>>>>> 01b01c27dc1e3eca311561047660c63f6f8e9b27
 class Cross{
 public:
     int id;
@@ -18,6 +23,7 @@ public:
     int down;
     int left;
     std::vector<int> roadIds;
+<<<<<<< HEAD
     unordered_map<pair<int,int>, int> directionMap;
     std::vector<int> providerDirection, receiverDirection, validRoadDirecction;
     std::vector<int> provider, receiver, validRoad;
@@ -77,6 +83,18 @@ public:
         done = false;
         update = false;
     }
+=======
+    std::unordered_map<size_t, int> directionMap;
+    std::vector<int> providerDirection, receiverDirection, validRoadDirecction;
+    std::vector<int> provider, receiver, validRoad;
+
+    std::unordered_map<int, std::vector<int>> carport;
+    std::vector<int> readyCars, leftCars;
+    int parkCarNum, finishCarNum;
+    bool done, update;
+
+	Cross(int i, int u, int r, int d, int l);
+>>>>>>> 01b01c27dc1e3eca311561047660c63f6f8e9b27
     Cross()
     {
 
@@ -85,6 +103,30 @@ public:
     int ReadCross(const std::string );
     void Display();
     int RemoveSingleRoad(std::vector<Road> &roads);
+<<<<<<< HEAD
 };
 
+=======
+	void carportInital(int timePlane, int carId);
+	void step();
+	void outOfCarport();
+	void setDone(bool flag);
+	bool isConflict(int fromA, int directionA, int fromB, int directionB);
+};
+
+
+class Simulation{
+public:
+    bool dead;
+	Simulation(){
+        dead = false;
+    }
+    void step();
+    void simulate();
+};
+
+
+
+
+>>>>>>> 01b01c27dc1e3eca311561047660c63f6f8e9b27
 #endif

@@ -14,6 +14,7 @@ public:
     int dst_cross;
     int is_dup;
     int carCapcity;
+<<<<<<< HEAD
     vector<vector<int>> forwardBucket;
     vector<vector<int>> backwardBucket;
     vector<vector<int>> provideBucket;
@@ -23,6 +24,17 @@ public:
     bool forwardDone, backwardDone;
     int px,py,provideNum, receiveNum;
     int provideDone;
+=======
+    std::vector<std::vector<int>> forwardBucket;
+	std::vector<std::vector<int>> backwardBucket;
+	std::vector<std::vector<int>> *provideBucket;
+	std::vector<std::vector<int>> *receiveBucket;
+    int fx, fy, bx, by;
+    int forwardNum, backwardNum;
+    int forwardDone, backwardDone;
+    int*px,*py,*provideNum, *receiveNum;
+    int* provideDone;
+>>>>>>> 01b01c27dc1e3eca311561047660c63f6f8e9b27
 public:
     Road(int i,int l,int m,int c,int s,int d,int is_d)
     {
@@ -33,6 +45,7 @@ public:
         src_cross=s;
         dst_cross=d; 
         is_dup=is_d;
+<<<<<<< HEAD
 
         carCapcity = channel*length;
         for(int i=0; i<lenght; i++){
@@ -51,6 +64,8 @@ public:
         provideNum=-1;
 
 
+=======
+>>>>>>> 01b01c27dc1e3eca311561047660c63f6f8e9b27
     }
 
     Road()
@@ -60,7 +75,19 @@ public:
 
     int ReadRoad(const std::string );
     void Display();
+<<<<<<< HEAD
 
+=======
+	std::string chooseAbsoluteBucket(int crossId, std::string pr);
+	void setBucket(int crossId);
+	void stepInit();
+	void moveInChannel(std::vector<std::vector<int>> & bucket, int channel);
+	int findCar(int st, int end, int channel, std::vector<std::vector<int>>& bucket);
+	int firstPriorityCar();
+	int getSpeed();
+	void firstPriorityCarAct(int action);
+	int receiveCar(int carId);
+>>>>>>> 01b01c27dc1e3eca311561047660c63f6f8e9b27
     
 };
 

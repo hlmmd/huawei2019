@@ -1,5 +1,8 @@
 
 
+#include <unistd.h>
+#include <stdlib.h>
+
 #include "common.h"
 
 //静态成员变量需要声明
