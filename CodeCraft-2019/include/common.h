@@ -15,6 +15,16 @@
 #include "Cross.h"
 #include "Road.h"
 #include "Car.h"
+#include "optimize.h"
+
+//cs paras
+#define para_v1 0.5
+#define para_v2 5
+#define para_v3 1
+#define para_choose 0.8
+//cs paras
+
+
 
 class Car;
 class Road;

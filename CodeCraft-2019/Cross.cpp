@@ -343,12 +343,13 @@ int Simulation::simulate()
         if (CarDistribution[2] == CarNameSpace.size())
         {
             cout << CarDistribution[2] << endl;
-            break;
+            return Time;
+            //return CarDistribution[2];
         }
         if (dead)
         {
             cout << "dead" << endl;
-            break;
+            return -1;
         }
         Time++;
     }

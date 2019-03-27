@@ -43,6 +43,8 @@ class Car
 	std::vector<int> route;
 	int plane_time;
 
+//cs
+    int changes;
   public:
 	Car()
 	{

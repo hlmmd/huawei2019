@@ -5,6 +5,9 @@
 
 using std::vector;
 
+using std::cout;
+using std::endl;
+
 int main(int argc, char *argv[])
 {
 	srand(time(0));
@@ -274,14 +277,85 @@ int main(int argc, char *argv[])
 	sort(CrossNameSpace.begin(), CrossNameSpace.end());
 
 	//运行判题器
-	Simulation s;
-	int simulate_time = s.simulate();
-	std::cout << "time: " << simulate_time << std::endl;
+	// Simulation s;
+	// int simulate_time = s.simulate();
+	// std::cout << "time: " << simulate_time << std::endl;
 	//end
 
 	gettimeofday(&end, NULL);
 	diff = 1000000 * (end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec;
 	std::cout << "program total run time: " << diff << std::endl;
+
+
+	Optimize optimizer;
+
+	Optimize::dist.assign(Cross::Crosses.size(), std::vector<int>(Cross::Crosses.size(), 9999999));
+	Optimize::scores.assign(Road::Roads.size(), std::vector<int>(Cross::Crosses.size(), 0));
+	Optimize::dist_table.assign(Cross::Crosses.size(), std::vector<std::vector<int>>(Cross::Crosses.size(), std::vector<int>()));
+	//这里求出两个表，表太大不用函数调用
+	//n*n vector<int>存储对应两点的最短陆径，弗洛伊德算法
+	for (auto road : Road::Roads)
+	{
+		Optimize::dist[Cross_findpos_by_id(road.src_cross)][Cross_findpos_by_id(road.dst_cross)] = road.length;
+		Optimize::dist_table[Cross_findpos_by_id(road.src_cross)][Cross_findpos_by_id(road.dst_cross)].push_back(road.id);
+		if (road.is_dup)
+		{
+			Optimize::dist[Cross_findpos_by_id(road.dst_cross)][Cross_findpos_by_id(road.src_cross)] = road.length;
+			Optimize::dist_table[Cross_findpos_by_id(road.dst_cross)][Cross_findpos_by_id(road.src_cross)].push_back(road.id);
+		}
+	}
+
+	for (int i1 = 0; i1 < Cross::Crosses.size(); ++i1)
+	{
+		for (int j1 = 0; j1 < Cross::Crosses.size(); ++j1)
+		{
+			for (int k1 = 0; k1 < Cross::Crosses.size(); ++k1)
+			{
+				if (Optimize::dist[j1][k1] > Optimize::dist[j1][i1] + Optimize::dist[i1][k1])
+				{
+					Optimize::dist[j1][k1] = Optimize::dist[j1][i1] + Optimize::dist[i1][k1];
+					Optimize::dist_table[j1][k1].assign(Optimize::dist_table[j1][i1].begin(), Optimize::dist_table[j1][i1].end());
+					for (auto t : Optimize::dist_table[i1][k1])
+					{
+						Optimize::dist_table[j1][k1].push_back(t);
+					}
+				}
+			}
+		}
+	}
+
+	Simulation sim;
+	int time_sche = sim.simulate();
+	if (time_sche == -1)
+	{
+		cout << "dead";
+		exit(-1);
+	}
+
+	//csbeg  update value1
+
+	//利用之前的Cars，是一个可行解，更新Road.score
+	int road_pos, last_score, dst_pos;
+	for (auto car : Car::Cars)
+	{
+		for (auto i : car.road_seq)
+		{
+			road_pos = Road_findpos_by_id(i);
+			dst_pos = Cross_findpos_by_id(car.dst);
+			last_score = Optimize::scores[road_pos][dst_pos];
+			Optimize::scores[road_pos][dst_pos] = (last_score == 0) ? time_sche : (last_score + time_sche) / 2; /////?
+		}
+	}
+	//Reset_Group(Cars_group);
+
+	//计算3（2）？个方向的下一个cross的分数
+	//1、距离目标dst的dist 直接读取dist[src][dst]
+	//2、当前路径上车辆cars cars_speed  该状态动态更新
+	//3、当前路径状态 int sit_score=Road::Roads[Road_findpos_by_id(id)].score;
+	//在去除单项路之前计算每个路口的车道总数
+	//std::vector<std::vector<std::vector<std::string>>>dist_table(Cross::Crosses.size(),std::vector<std::vector<std::string>>(Cross::Crosses.size(),std::vector<std::string>()));
+
+	//csend
 
 	// TODO:read input filebuf
 	// TODO:process
