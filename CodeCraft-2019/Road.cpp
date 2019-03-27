@@ -5,6 +5,7 @@
 #include <sstream>
 #include "common.h"
 
+using namespace std;
 using std::vector;
 using std::string;
 
