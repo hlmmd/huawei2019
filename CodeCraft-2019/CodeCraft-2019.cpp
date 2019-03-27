@@ -168,6 +168,7 @@ int main(int argc, char *argv[])
 		int car_roadnum_avg = 0;
 
 		//每次发两组，东北方向车和西南方向车不会发生死锁，同时发车。增加切换方向时的间隔、切换速度间隔
+		//注意，这里将dj_time排序，使运行时间长的车排在最后，这样计算出来的间隔会比较大，防止死锁。
 		for (int n = 0; n < 2; n++)
 		{
 			int temp_schdule = schdule_time;
@@ -224,7 +225,7 @@ int main(int argc, char *argv[])
 						Cars_dir_speed_group[i][j][started_car_nums].start_time = schdule_time;
 						Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][started_car_nums].id)].start_time = (schdule_time);
 					}
-					std::cout << Cars_dir_speed_group[i][j][0].dir_type << " " << start_per_time << " " << car_djtime_avg << " " << schdule_time << std::endl;
+				//	std::cout << Cars_dir_speed_group[i][j][0].dir_type << " " << start_per_time << " " << car_djtime_avg << " " << schdule_time << std::endl;
 					schdule_time += delta_time;
 				}
 				max_sc_time = std::max(max_sc_time, schdule_time);
