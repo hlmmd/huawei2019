@@ -42,6 +42,19 @@ int Cross::Cal_road_channel_num()
     return count;
 }
 
+int Cross::InitSimulate()
+{
+    readyCars.clear();
+    carport.clear();
+    leftCars.clear();
+
+    parkCarNum = 0;
+    finishCarNum = 0;
+    done = false;
+    update = false;
+    return 0;
+}
+
 int Cross::ReadCross(const std::string cross_infostr)
 {
     std::vector<std::string> res;
@@ -240,6 +253,7 @@ void Cross::step()
 
 void Cross::outOfCarport()
 {
+    //cout<<"aa"<<endl;
     readyCars.assign(leftCars.begin(), leftCars.end());
     leftCars.clear();
     if (carport.find(Time) != carport.end())
@@ -297,11 +311,13 @@ bool Cross::isConflict(int fromA, int directionA, int fromB, int directionB)
 
 void Simulation::step()
 {
-    //   cout << "time: " << Time << endl;
+    // cout << "time: " << Time << endl;
     for (int crossId : CrossNameSpace)
         CrossDict[crossId]->setDone(false);
+
     for (int road : RoadNameSpace)
         RoadDict[road]->stepInit();
+
     vector<int> unfinishedCross = CrossNameSpace;
     while (!unfinishedCross.empty())
     {
@@ -324,25 +340,26 @@ void Simulation::step()
             exit(-1);
         }
     }
+
     for (int crossId : CrossNameSpace)
     {
         for (int roadId : CrossDict[crossId]->validRoad)
         {
             RoadDict[roadId]->setBucket(crossId);
         }
+
         CrossDict[crossId]->outOfCarport();
     }
 }
 
 int Simulation::simulate()
 {
-    Time = 0;
     while (1)
     {
         this->step();
         if (CarDistribution[2] == CarNameSpace.size())
         {
-            cout << CarDistribution[2] << endl;
+           // cout << CarDistribution[2] << endl;
             return Time;
             //return CarDistribution[2];
         }
@@ -354,6 +371,38 @@ int Simulation::simulate()
         Time++;
     }
     return Time;
+}
+
+void Simulation::init()
+{
+
+    Time = 0;
+    for (int i = 0; i < 3; i++)
+        CarDistribution[i] = 0;
+    for (auto &car : Car::Cars)
+    {
+        car.InitSimulate();
+    }
+
+    for (auto &road : Road::Roads)
+    {
+        road.InitSimulate();
+    }
+
+    for (auto &cross : Cross::Crosses)
+    {
+        cross.InitSimulate();
+    }
+
+    for (auto car : Car::Cars)
+    {
+        CarDict[car.id]->startInit(car.start_time, car.road_seq);
+    }
+    CarDistribution[0] = CarNameSpace.size();
+    for (int carId : CarNameSpace)
+    {
+        CrossDict[CarDict[carId]->src]->carportInital(CarDict[carId]->plane_time, carId);
+    }
 }
 
 //end

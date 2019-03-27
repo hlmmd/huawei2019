@@ -65,6 +65,21 @@ int Car::get_next_dir_type()
     return dir_type;
 }
 
+int  Car::InitSimulate()
+{
+    state = 0;
+    plane_time = 0;
+    curRoad = -1, nextCrossId = src;
+    wait = false;
+    x = 0, y = 0;
+    routeIndex = -1;
+    //end
+
+    //cs
+    changes = 0;
+}
+
+
 int Car::ReadCar(const std::string car_infostr)
 {
     std::vector<std::string> res;

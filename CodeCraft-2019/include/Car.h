@@ -58,6 +58,8 @@ class Car
 		maxspeed = m;
 		start_time = time;
 	}
+
+	int InitSimulate();
 	int ReadCar(const std::string carPath);
 	void Display();
 

@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
 	ReadRoad(Road::Roads, roadPath);
 	for (int i = 0; i < Road::Roads.size(); i++)
 	{
+
 		RoadNameSpace.push_back(Road::Roads[i].id);
 		RoadDict[Road::Roads[i].id] = &Road::Roads[i];
 	}
@@ -45,9 +46,13 @@ int main(int argc, char *argv[])
 	ReadCross(Cross::Crosses, crossPath);
 	for (int i = 0; i < Cross::Crosses.size(); i++)
 	{
+		Cross::Crosses[i].InitSimulate();
 		CrossNameSpace.push_back(Cross::Crosses[i].id);
 		CrossDict[Cross::Crosses[i].id] = &Cross::Crosses[i];
 	}
+
+	sort(CarNameSpace.begin(), CarNameSpace.end());
+	sort(CrossNameSpace.begin(), CrossNameSpace.end());
 
 	//在去除单项路之前计算每个路口的车道总数
 	int channel_total = 0;
@@ -237,55 +242,59 @@ int main(int argc, char *argv[])
 	WriteAnswer(Car::Cars, answerPath);
 
 	//zhao
-	std::ifstream fin(answerPath, std::ios::in);
-	if (fin)
-	{
-		std::string line;
-		while (getline(fin, line))
-		{
-			vector<std::string> res;
-			std::string result;
+	// std::ifstream fin(answerPath, std::ios::in);
+	// if (fin)
+	// {
+	// 	std::string line;
+	// 	while (getline(fin, line))
+	// 	{
+	// 		vector<std::string> res;
+	// 		std::string result;
 
-			std::stringstream ss(line);
-			while (getline(ss, result, ','))
-			{
-				result = num_trim(result);
-				res.push_back(result);
-			}
+	// 		std::stringstream ss(line);
+	// 		while (getline(ss, result, ','))
+	// 		{
+	// 			result = num_trim(result);
+	// 			res.push_back(result);
+	// 		}
 
-			int carId = stoi(res[0]);
-			int planTime = stoi(res[1]);
-			vector<int> route;
-			for (int i = 2; i < res.size(); i++)
-			{
-				route.push_back(stoi(res[i]));
-			}
-			CarDict[carId]->startInit(planTime, route);
-		}
-	}
-	else
-	{
-		std::cout << "open error" << std::endl;
-		return -1;
-	}
-	CarDistribution[0] = CarNameSpace.size();
-	for (int carId : CarNameSpace)
-	{
-		CrossDict[CarDict[carId]->src]->carportInital(CarDict[carId]->plane_time, carId);
-	}
-	sort(CarNameSpace.begin(), CarNameSpace.end());
-	sort(CrossNameSpace.begin(), CrossNameSpace.end());
+	// 		int carId = stoi(res[0]);
+	// 		int planTime = stoi(res[1]);
+	// 		vector<int> route;
+	// 		for (int i = 2; i < res.size(); i++)
+	// 		{
+	// 			route.push_back(stoi(res[i]));
+	// 		}
+	// 		CarDict[carId]->startInit(planTime, route);
+	// 	}
+	// }
+	// else
+	// {
+	// 	std::cout << "open error" << std::endl;
+	// 	return -1;
+	// }
+	// CarDistribution[0] = CarNameSpace.size();
+	// for (int carId : CarNameSpace)
+	// {
+	// 	CrossDict[CarDict[carId]->src]->carportInital(CarDict[carId]->plane_time, carId);
+	// }
+	// sort(CarNameSpace.begin(), CarNameSpace.end());
+	// sort(CrossNameSpace.begin(), CrossNameSpace.end());
+	//end
+
 
 	//运行判题器
-	// Simulation s;
-	// int simulate_time = s.simulate();
-	// std::cout << "time: " << simulate_time << std::endl;
-	//end
+	Simulation s;
+	s.init();
+
+	int simulate_time = s.simulate();
+	std::cout << "schdule time: " << simulate_time << std::endl;
 
 	gettimeofday(&end, NULL);
 	diff = 1000000 * (end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec;
-	std::cout << "program total run time: " << diff << std::endl;
+	std::cout << "program time: " << diff << std::endl;
 
+	exit(0);
 
 	Optimize optimizer;
 
@@ -325,13 +334,14 @@ int main(int argc, char *argv[])
 	}
 
 	Simulation sim;
+	sim.init();
 	int time_sche = sim.simulate();
 	if (time_sche == -1)
 	{
 		cout << "dead";
 		exit(-1);
 	}
-
+	cout<<time_sche<<endl;
 	//csbeg  update value1
 
 	//利用之前的Cars，是一个可行解，更新Road.score

@@ -47,6 +47,8 @@ class Cross
 	{
 	}
 
+	int InitSimulate();
+
 	int ReadCross(const std::string);
 	void Display();
 	int RemoveSingleRoad();
@@ -73,6 +75,9 @@ class Simulation
 	}
 	void step();
 	int simulate();
+
+	void init();
+
 };
 
 #endif

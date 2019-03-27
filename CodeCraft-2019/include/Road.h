@@ -49,6 +49,8 @@ class Road
 	{
 	}
 
+	int InitSimulate();
+
 	int ReadRoad(const std::string);
 	void Display();
 	int Get_origin_priority();
