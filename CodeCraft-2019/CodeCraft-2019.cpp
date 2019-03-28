@@ -164,7 +164,6 @@ int main(int argc, char *argv[])
 		channel_avg += road.channel << road.is_dup;
 	channel_avg /= Road::Roads.size();
 
-
 	for (int j = 0; j < car_speed.size(); j++)
 	{
 		int car_djtime_avg = 0;
@@ -251,7 +250,6 @@ int main(int argc, char *argv[])
 							Cars_dir_speed_group[i][j][start_index].started == true;
 						}
 					}
-
 					//	std::cout << start_per_time << " " << schdule_time << std::endl;
 					schdule_time += delta_time;
 				}
@@ -267,14 +265,52 @@ int main(int argc, char *argv[])
 		schdule_time += car_djtime_avg * 1.2;
 	}
 
-
 	auto comp2 = [](Car car1, Car car2) { return car1.id < car2.id; };
 	std::sort(Car::Cars.begin(), Car::Cars.end(), comp2);
 	WriteAnswer(Car::Cars, answerPath);
 
+	//zhao
+	std::ifstream fin(answerPath, std::ios::in);
+	if (fin)
+	{
+		std::string line;
+		while (getline(fin, line))
+		{
+			vector<std::string> res;
+			std::string result;
+
+			std::stringstream ss(line);
+			while (getline(ss, result, ','))
+			{
+				result = num_trim(result);
+				res.push_back(result);
+			}
+
+			int carId = stoi(res[0]);
+			int planTime = stoi(res[1]);
+			vector<int> route;
+			for (int i = 2; i < res.size(); i++)
+			{
+				route.push_back(stoi(res[i]));
+			}
+			CarDict[carId]->startInit(planTime, route);
+		}
+	}
+	else
+	{
+		std::cout << "open error" << std::endl;
+		return -1;
+	}
+	CarDistribution[0] = CarNameSpace.size();
+	for (int carId : CarNameSpace)
+	{
+		CrossDict[CarDict[carId]->src]->carportInital(CarDict[carId]->plane_time, carId);
+	}
+	sort(CarNameSpace.begin(), CarNameSpace.end());
+	sort(CrossNameSpace.begin(), CrossNameSpace.end());
+
 	//运行判题器
 	Simulation s;
-	s.init();
 
 	int simulate_time = s.simulate();
 	std::cout << "schdule time: " << simulate_time << std::endl;

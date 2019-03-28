@@ -398,11 +398,7 @@ void Simulation::init()
     {
         CarDict[car.id]->startInit(car.start_time, car.road_seq);
     }
-    CarDistribution[0] = CarNameSpace.size();
-    for (int carId : CarNameSpace)
-    {
-        CrossDict[CarDict[carId]->src]->carportInital(CarDict[carId]->plane_time, carId);
-    }
+   
 }
 
 //end
