@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
 			schdule_time = max_sc_time;
 			//切换方向时增加间隔
 			if (n == 0)
-				schdule_time += car_djtime_avg / car_speed[j] * 2;
+				schdule_time += car_djtime_avg / car_speed[j] * 1.8;
 		}
 		//切换速度时增加间隔
 		schdule_time += car_djtime_avg * 1.2;
