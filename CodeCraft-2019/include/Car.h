@@ -6,57 +6,78 @@
 
 #ifndef CAR
 #define CAR
-class Car{
-public:
-    int id;
-    int src;
-    int dst;
-    int maxspeed;
-    int start_time;
+class Car
+{
+  public:
+	int id;
+	int src;
+	int dst;
+	int maxspeed;
+	int start_time;
 
-    std::vector<int> road_seq;
-    std::set<int> road_set;
-    
-    static std::vector<Car> Cars;
+	int reset_start_time;
 
-    //车的行驶方向。分为东北、西北、东南、西南四种方向，根据最短路径确定一个方向。
-    //再根据方向重新计算最短路径，如果不存在则重新确定方向。
-    
-    //存储dj算法的时间
-    int dj_time ;
+	std::vector<int> road_seq;
+	std::set<int> road_set;
 
-    std::vector<int> dir_seq;
-    bool is_dir_type_set;
+	static std::vector<Car> Cars;
 
-    //是否启动
-    bool started = false;
+	//车的行驶方向。分为东北、西北、东南、西南四种方向，根据最短路径确定一个方向。
+	//再根据方向重新计算最短路径，如果不存在则重新确定方向。
 
-    int dir_type ;
+	//存储dj算法的时间
+	int dj_time;
 
-public:
+	std::vector<int> dir_seq;
+	bool is_dir_type_set;
 
-    Car()
-    {
-    }
+	//是否启动
+	bool started = false;
 
-    Car(int i,int s,int d,int m,int time)
-    {
-       id = i;
-       src = s;
-       dst = d;
-       maxspeed=m;
-       start_time =time;
-    }
-    int ReadCar(const std::string carPath);
-    void Display();
+	int dir_type;
 
-    int CalDijkstraPath();
-    int getpath(std::vector<int> &path,int src_cross ,int dst_cross);
-    int WriteAnswer(const std::string & answerPath);
+	//zhao
 
-    int set_dir_type();
-    int get_next_dir_type();
-    int CalDijkstraPath_withdir();
+	int x, y, routeIndex;
+	int state;
+	int curRoad, nextCrossId;
+	bool wait;
+	std::vector<int> route;
+	int plane_time;
+
+//cs
+    int changes;
+  public:
+	Car()
+	{
+	}
+
+	Car(int i, int s, int d, int m, int time)
+	{
+		id = i;
+		src = s;
+		dst = d;
+		maxspeed = m;
+		start_time = time;
+	}
+
+	int InitSimulate();
+	int ReadCar(const std::string carPath);
+	void Display();
+
+	int CalDijkstraPath();
+	int getpath(std::vector<int> &path, int src_cross, int dst_cross);
+	int WriteAnswer(const std::string &answerPath);
+
+	int set_dir_type();
+	int get_next_dir_type();
+	int CalDijkstraPath_withdir();
+
+	//zhao
+	void updateDynamic(int state, int x, int y, int curRoad, int roadSpeed, int nextCrossId);
+	void startInit(int plane_time, std::vector<int> &rou);
+	int getSpeed();
+	int getNextRoad();
 };
 
 #endif

@@ -15,12 +15,29 @@
 #include "Cross.h"
 #include "Road.h"
 #include "Car.h"
+#include "optimize.h"
+
+//cs paras
+#define para_v1 0.5
+#define para_v2 5
+#define para_v3 1
+#define para_choose 0.8
+//cs paras
+
+
 
 class Car;
 class Road;
 class Cross;
 
-int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car>> &cars_speed_group ,std::vector<int> &car_speed);
+extern std::unordered_map<int, Car *> CarDict;
+extern std::unordered_map<int, Road *> RoadDict;
+extern std::unordered_map<int, Cross *> CrossDict;
+extern std::vector<int> CarNameSpace, RoadNameSpace, CrossNameSpace;
+extern int CarDistribution[3];
+extern int Time;
+
+int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car>> &cars_speed_group, std::vector<int> &car_speed);
 
 bool finish_start_group(std::vector<Car> &cars);
 
