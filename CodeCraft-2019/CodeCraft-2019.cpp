@@ -311,7 +311,7 @@ int main(int argc, char *argv[])
 	sort(CrossNameSpace.begin(), CrossNameSpace.end());
 
 	//运行判题器
-	while (1)
+//	while (1)
 	{
 		Simulation s;
 		int simulate_time = s.simulate();
