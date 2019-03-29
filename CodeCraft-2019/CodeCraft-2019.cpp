@@ -136,6 +136,8 @@ int main(int argc, char *argv[])
 	auto comp_speed = [](int s1, int s2) { return s1 > s2; };
 	std::sort(car_speed.begin(), car_speed.end(), comp_speed);
 
+
+
 	//根据车速再分组，车速快的最先发车，再发慢的。最大化利用车速优势。
 	std::vector<std::vector<std::vector<Car>>> Cars_dir_speed_group;
 
@@ -161,111 +163,143 @@ int main(int argc, char *argv[])
 	//csbeg  update value1
 	int channel_avg = 0;
 	for (auto road : Road::Roads)
-		channel_avg += road.channel << road.is_dup;
+		channel_avg += road.channel;
 	channel_avg /= Road::Roads.size();
 
-	double div2 = Car::Cars.size() / 10000 + 1;
+	double div2 = Car::Cars.size() / 10000 / 2;
+	if (div2 < 1)
+		div2 = 1;
+	std::vector<int> cars_ttl;
+
+
+
+	//
+
+	int new_cross_channels = 0;
+	for(int i = 0;i<Cross::Crosses.size();i++)
+	{
+		for(int j = 0;j<ROADS_OF_CROSS;j++)
+		{
+			if(Cross::Crosses[i].dir[j]!=-1)
+				new_cross_channels+= Road::Roads[ Road_findpos_by_id(Cross::Crosses[i].dir[j]) ].channel ;
+		}
+	}
+	new_cross_channels/=2;
+
+
+	int new_total_vol =0;
+
+	for(auto road: Road::Roads)
+	{
+		new_total_vol+=road.length*road.channel* (road.is_dup+1);
+	}
+	new_total_vol/=2;
+
+	int new_total_djtime = 0;
+	for(auto car: Car::Cars)
+		new_total_djtime+=car.dj_time;
+	
+	//int new_avg_djtime = 
+
+	
+	//cout<<new_cross_channels <<" "<<new_total_vol<<endl;
+
+	int loop_of_start = new_total_vol/new_cross_channels;
+
+	//exit(0);
+
+
 
 	for (int j = 0; j < car_speed.size(); j++)
 	{
-		int car_djtime_avg = 0;
-		int car_roadnum_avg = 0;
-		//每次发两组，东北方向车和西南方向车不会发生死锁，同时发车。增加切换方向时的间隔、切换速度间隔
-		//注意，这里将dj_time排序，使运行时间长的车排在最后，这样计算出来的间隔会比较大，防止死锁。
-		for (int n = 0; n < 2; n++)
+		for (int i = 0; i < Dir_group_size; i++)
 		{
-			int temp_schdule = schdule_time;
-			int max_sc_time = 0;
-
-			for (int i = 2 * n; i < 2 * n + 2; i++)
+		
+			int started_car_nums = 0;
+			//计算这些车的平均用时，作为relax_time，表示跑完发完一轮车
+			int t = 0;
+			for (auto car : Cars_dir_speed_group[i][j])
 			{
-				schdule_time = temp_schdule;
-				int started_car_nums = 0;
-				//计算这些车的平均用时，作为relax_time，表示跑完发完一轮车
-				int t = 0;
+				if (car.started == false)
+					t += car.dj_time;
+			}
+			double relax_time = t / Cars_dir_speed_group[i][j].size();
+			double car_djtime_avg = 0;
+			int car_roadnum_avg = 0;
+			int start_per_time;
+			while (!finish_start_group(Cars_dir_speed_group[i][j]))
+			{
+				//当前车辆组中未发车的数量
+				int cars_size = Cars_dir_speed_group[i][j].size() - started_car_nums;
+
+				car_djtime_avg = 0;
+				car_roadnum_avg = 0;
 				for (auto car : Cars_dir_speed_group[i][j])
 				{
 					if (car.started == false)
-						t += car.dj_time;
+					{
+						car_djtime_avg += car.dj_time;
+						car_roadnum_avg += car.road_seq.size();
+					}
 				}
+				car_roadnum_avg /= cars_size;
+				double div = car_speed_avg; //car_speed_avg
+										
+				start_per_time = (double)car_djtime_avg / cars_size * Cars_dir_speed_group[i][j][0].maxspeed / div / div2;
+				//	int start_per_time = (double)relax_time * relax_time / car_djtime_avg * cars_size * Cars_dir_speed_group[i][j][0].maxspeed / div * 2.5;
+				car_djtime_avg /= cars_size;
 
-				int relax_time = t / Cars_dir_speed_group[i][j].size();
+				int start_index = 0;
+				for (; start_index < Cars_dir_speed_group[i][j].size(); start_index++)
+					if (Cars_dir_speed_group[i][j][start_index].started == false)
+						break;
 
-				int min_dj_time = INT_MAX;
-				for (auto car : Cars_dir_speed_group[i][j])
+				int temp_start_count = 0;
+				for (int x = 0; x < start_per_time && started_car_nums < Cars_dir_speed_group[i][j].size() && start_index < Cars_dir_speed_group[i][j].size(); start_index++)
 				{
-					if (car.dj_time < min_dj_time)
-						min_dj_time = car.dj_time;
+					//只有没有开的车、且计划出发时间小于当前安排时间的会被访问
+					if (Cars_dir_speed_group[i][j][start_index].started == false && Cars_dir_speed_group[i][j][start_index].start_time <= (schdule_time))
+					{
+						Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][start_index].id)].start_time = (schdule_time);
+						Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][start_index].id)].started = true;
+						Cars_dir_speed_group[i][j][start_index].started = true;
+						started_car_nums++;
+						x++;
+						temp_start_count++;
+					}
 				}
 
-				while (!finish_start_group(Cars_dir_speed_group[i][j]))
+				//考虑任然存在start_time>schdule_time的车 感觉写的全是bug
+				start_index = 0;
+				while (temp_start_count < start_per_time && started_car_nums < Cars_dir_speed_group[i][j].size())
 				{
-					//当前车辆组中未发车的数量
-					int cars_size = Cars_dir_speed_group[i][j].size() - started_car_nums;
-
-					car_djtime_avg = 0;
-					car_roadnum_avg = 0;
-					for (auto car : Cars_dir_speed_group[i][j])
+					if (Cars_dir_speed_group[i][j][start_index].started == false)
 					{
-						if (car.started == false)
-						{
-							car_djtime_avg += car.dj_time;
-							car_roadnum_avg += car.road_seq.size();
-						}
+						//Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][start_index].id)].start_time = (schdule_time);
+						Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][start_index].id)].started = true;
+						Cars_dir_speed_group[i][j][start_index].started = true;
+						started_car_nums++;
+						temp_start_count++;
 					}
-
-					car_roadnum_avg /= cars_size;
-
-					int div = car_speed_avg; //
-					int start_per_time = (double)car_djtime_avg / cars_size * car_speed[j] * delta_time / div / div2;
-
-					// double div = car_speed_avg; //car_speed_avg
-					// //int start_per_time = (double)car_djtime_avg / cars_size * Cars_dir_speed_group[i][j][0].maxspeed / div;
-					// int start_per_time = (double)relax_time*relax_time/car_djtime_avg * cars_size * Cars_dir_speed_group[i][j][0].maxspeed / div * 2.5;
-					car_djtime_avg /= cars_size;
-
-					int start_index = 0;
-					for (; start_index < Cars_dir_speed_group[i][j].size(); start_index++)
-						if (Cars_dir_speed_group[i][j][start_index].started == false)
-							break;
-
-					for (int x = 0; x < start_per_time && started_car_nums < Cars_dir_speed_group[i][j].size() && start_index < Cars_dir_speed_group[i][j].size(); start_index++)
-					{
-						//只有没有开的车、且计划出发时间小于当前安排时间的会被访问
-						if (Cars_dir_speed_group[i][j][start_index].started == false && Cars_dir_speed_group[i][j][start_index].start_time <= (schdule_time))
-						{
-							Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][start_index].id)].start_time = (schdule_time);
-							Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][start_index].id)].started = true;
-							Cars_dir_speed_group[i][j][start_index].started = true;
-							started_car_nums++;
-							x++;
-						}
-					}
-					//考虑任然存在start_time>schdule_time的车
-					for (int x = 0; x < Cars_dir_speed_group[i][j].size(); x++)
-					{
-						if (Cars_dir_speed_group[i][j][start_index].started == false)
-						{
-							//Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][start_index].id)].start_time = (schdule_time);
-							Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][start_index].id)].started = true;
-							Cars_dir_speed_group[i][j][start_index].started == true;
-						}
-					}
-					//	std::cout << start_per_time << " " << schdule_time << std::endl;
-					schdule_time += delta_time;
+					start_index++;
 				}
-
-				max_sc_time = std::max(max_sc_time, schdule_time);
+				schdule_time += delta_time;
+				//	cout << start_per_time << " " << schdule_time << endl;
 			}
-			schdule_time = max_sc_time;
-			//切换方向时增加间隔
-			if (n == 0)
-				schdule_time += car_djtime_avg / car_speed[j] * div2 / 4;
+			schdule_time += car_djtime_avg / 2.5;
+			// if (i == 1 )
+			// 	schdule_time += car_djtime_avg / car_speed[j] * div2/2;
+			// else if ( i == 3)
+			// 	schdule_time += car_djtime_avg / car_speed[j] * div2*2 ;
+			// if (j == 0)
+			// 	schdule_time += car_djtime_avg / car_speed[j];
+			// else if (j == 1)
+			// 	schdule_time += car_djtime_avg / car_speed[j] * 4;
+			// else
+			// 	schdule_time += car_djtime_avg / car_speed[j] * 2;
 		}
-		//切换速度时增加间隔
-		schdule_time += car_djtime_avg * div2 / 3;
 	}
-
+	//	std::cout << time << std::endl;
 	auto comp2 = [](Car car1, Car car2) { return car1.id < car2.id; };
 	std::sort(Car::Cars.begin(), Car::Cars.end(), comp2);
 	WriteAnswer(Car::Cars, answerPath);
@@ -311,7 +345,7 @@ int main(int argc, char *argv[])
 	sort(CrossNameSpace.begin(), CrossNameSpace.end());
 
 	//运行判题器
-//	while (1)
+	//	while (1)
 	{
 		Simulation s;
 		int simulate_time = s.simulate();

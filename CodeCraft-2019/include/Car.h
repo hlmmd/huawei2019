@@ -27,7 +27,7 @@ public:
 	//再根据方向重新计算最短路径，如果不存在则重新确定方向。
 
 	//存储dj算法的时间
-	int dj_time;
+	double dj_time;
 
 	std::vector<int> dir_seq;
 	bool is_dir_type_set;
@@ -66,13 +66,13 @@ public:
 	int ReadCar(const std::string carPath);
 	void Display();
 
-	int CalDijkstraPath();
+	double CalDijkstraPath();
 	int getpath(std::vector<int> &path, int src_cross, int dst_cross);
 	int WriteAnswer(const std::string &answerPath);
 
 	int set_dir_type();
 	int get_next_dir_type();
-	int CalDijkstraPath_withdir();
+	double CalDijkstraPath_withdir();
 	void init();
 	//zhao
 	void updateDynamic(int state, int x, int y, int curRoad, int roadSpeed, int nextCrossId);

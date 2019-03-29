@@ -158,7 +158,7 @@ int Car::getpath(std::vector<int> &path, int src_cross, int dst_cross)
     return 0;
 }
 
-int Car::CalDijkstraPath_withdir()
+double Car::CalDijkstraPath_withdir()
 {
     std::vector<double> dist(Cross::Crosses.size(), 9999999);
     std::vector<bool> visited(Cross::Crosses.size(), false);
@@ -315,7 +315,7 @@ int Car::CalDijkstraPath_withdir()
     return -1;
 }
 
-int Car::CalDijkstraPath()
+double Car::CalDijkstraPath()
 {
     std::vector<double> dist(Cross::Crosses.size(), 9999999);
     std::vector<bool> visited(Cross::Crosses.size(), false);
