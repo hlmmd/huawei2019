@@ -8,7 +8,7 @@
 #define CAR
 class Car
 {
-  public:
+public:
 	int id;
 	int src;
 	int dst;
@@ -21,8 +21,8 @@ class Car
 	std::set<int> road_set;
 
 	static std::vector<Car> Cars;
-   static std::vector<Car> Answer;///cs
-    static std::vector<Car> Answer_bk;///cs
+	static std::vector<Car> Answer;		 ///cs
+	static std::vector<Car> Answer_bk; ///cs
 	//车的行驶方向。分为东北、西北、东南、西南四种方向，根据最短路径确定一个方向。
 	//再根据方向重新计算最短路径，如果不存在则重新确定方向。
 
@@ -38,17 +38,18 @@ class Car
 	int dir_type;
 
 	//zhao
-
-	int x, y, routeIndex;
 	int state;
+	int plane_time;
 	int curRoad, nextCrossId;
 	bool wait;
+	int x, y;
+	int routeIndex;
 	std::vector<int> route;
-	int plane_time;
 
-//cs
-    int changes;
-  public:
+	//cs
+	int changes;
+
+public:
 	Car()
 	{
 	}
@@ -60,9 +61,8 @@ class Car
 		dst = d;
 		maxspeed = m;
 		start_time = time;
+		changes = 0;
 	}
-
-	int InitSimulate();
 	int ReadCar(const std::string carPath);
 	void Display();
 
@@ -73,7 +73,7 @@ class Car
 	int set_dir_type();
 	int get_next_dir_type();
 	int CalDijkstraPath_withdir();
-
+	void init();
 	//zhao
 	void updateDynamic(int state, int x, int y, int curRoad, int roadSpeed, int nextCrossId);
 	void startInit(int plane_time, std::vector<int> &rou);

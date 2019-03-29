@@ -40,7 +40,6 @@ int main(int argc, char *argv[])
 	ReadRoad(Road::Roads, roadPath);
 	for (int i = 0; i < Road::Roads.size(); i++)
 	{
-
 		RoadNameSpace.push_back(Road::Roads[i].id);
 		RoadDict[Road::Roads[i].id] = &Road::Roads[i];
 	}
@@ -48,7 +47,6 @@ int main(int argc, char *argv[])
 	ReadCross(Cross::Crosses, crossPath);
 	for (int i = 0; i < Cross::Crosses.size(); i++)
 	{
-		Cross::Crosses[i].InitSimulate();
 		CrossNameSpace.push_back(Cross::Crosses[i].id);
 		CrossDict[Cross::Crosses[i].id] = &Cross::Crosses[i];
 	}
@@ -172,7 +170,6 @@ int main(int argc, char *argv[])
 	{
 		int car_djtime_avg = 0;
 		int car_roadnum_avg = 0;
-
 		//每次发两组，东北方向车和西南方向车不会发生死锁，同时发车。增加切换方向时的间隔、切换速度间隔
 		//注意，这里将dj_time排序，使运行时间长的车排在最后，这样计算出来的间隔会比较大，防止死锁。
 		for (int n = 0; n < 2; n++)
@@ -314,10 +311,14 @@ int main(int argc, char *argv[])
 	sort(CrossNameSpace.begin(), CrossNameSpace.end());
 
 	//运行判题器
-	Simulation s;
-
-	int simulate_time = s.simulate();
-	std::cout << "schdule time: " << simulate_time << std::endl;
+	while (1)
+	{
+		Simulation s;
+		int simulate_time = s.simulate();
+		//Car::Cars = Car::Answer_bk; //
+		s.init();
+		std::cout << "schdule time: " << simulate_time << std::endl;
+	}
 
 	gettimeofday(&end, NULL);
 	diff = 1000000 * (end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec;

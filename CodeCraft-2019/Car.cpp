@@ -2,8 +2,8 @@
 
 //静态成员变量需要声明
 std::vector<Car> Car::Cars;
-   static std::vector<Car> Answer;///cs
-    static std::vector<Car> Answer_bk;///cs
+static std::vector<Car> Answer;    ///cs
+static std::vector<Car> Answer_bk; ///cs
 int Car::set_dir_type()
 {
     int cross_id = src;
@@ -66,21 +66,16 @@ int Car::get_next_dir_type()
     return dir_type;
 }
 
-int Car::InitSimulate()
+void Car::init()
 {
-
-  //  start_time = reset_start_time;
-
     state = 0;
-    plane_time = 0;
+    start_time = reset_start_time;
+    started = false;
+    //plane_time = 0;
     curRoad = -1, nextCrossId = src;
     wait = false;
     x = 0, y = 0;
     routeIndex = -1;
-    //end
-
-    //cs
-    changes = 0;
 }
 
 int Car::ReadCar(const std::string car_infostr)
@@ -482,118 +477,150 @@ int Car::getSpeed()
 
 int Car::getNextRoad()
 { //cs
-
     return routeIndex < route.size() ? route[routeIndex] : -1;
-   bool debug=false;
+
+    bool debug = false;
     //return routeIndex < route.size() ?route[routeIndex] : -1;
     //if(routeIndex==route.size()-1){
-    if(this->changes>2||routeIndex==route.size()-1){
-        return routeIndex < route.size() ?route[routeIndex] : -1;
+    if (this->changes > 2 || routeIndex == route.size() - 1)
+    {
+        return routeIndex < route.size() ? route[routeIndex] : -1;
     }
     std::vector<int> choose;
     Optimize optimizer_temp;
-    if(!optimizer_temp.random_change()&&!debug){ //no change
-        return routeIndex < route.size() ?route[routeIndex] : -1;
+    if (!optimizer_temp.random_change() && !debug)
+    { //no change
+        return routeIndex < route.size() ? route[routeIndex] : -1;
     }
     //change
-    int next_cross_id=this->nextCrossId;
-    int tempint=-1;
-    int road_pos_temp=-1;
-    for(int i2=0;i2<4;i2++) {
-        if (i2 == 0) {
-            road_pos_temp=Road_findpos_by_id(CrossDict[next_cross_id]->down);
-            if(Road::Roads[road_pos_temp].src_cross==next_cross_id||(Road::Roads[road_pos_temp].dst_cross==next_cross_id&&Road::Roads[road_pos_temp].is_dup)){
+    int next_cross_id = this->nextCrossId;
+    int tempint = -1;
+    int road_pos_temp = -1;
+    for (int i2 = 0; i2 < 4; i2++)
+    {
+        if (i2 == 0)
+        {
+            road_pos_temp = Road_findpos_by_id(CrossDict[next_cross_id]->down);
+            if (Road::Roads[road_pos_temp].src_cross == next_cross_id || (Road::Roads[road_pos_temp].dst_cross == next_cross_id && Road::Roads[road_pos_temp].is_dup))
+            {
                 tempint = CrossDict[next_cross_id]->down;
             }
-            else{
-                tempint=-1;
-            }
-        } else if (i2 == 1) {
-            road_pos_temp=Road_findpos_by_id(CrossDict[next_cross_id]->up);
-            if(Road::Roads[road_pos_temp].src_cross==next_cross_id||(Road::Roads[road_pos_temp].dst_cross==next_cross_id&&Road::Roads[road_pos_temp].is_dup)){
-                tempint = CrossDict[next_cross_id]->up;
-            }
-            else{
-                tempint=-1;
-            }
-        } else if (i2 == 2) {
-            road_pos_temp=Road_findpos_by_id(CrossDict[next_cross_id]->left);
-            if(Road::Roads[road_pos_temp].src_cross==next_cross_id||(Road::Roads[road_pos_temp].dst_cross==next_cross_id&&Road::Roads[road_pos_temp].is_dup)){
-                tempint = CrossDict[next_cross_id]->left;
-            }
-            else{
-                tempint=-1;
-            }
-        } else if (i2 == 3) {
-            road_pos_temp=Road_findpos_by_id(CrossDict[next_cross_id]->right);
-            if(Road::Roads[road_pos_temp].src_cross==next_cross_id||(Road::Roads[road_pos_temp].dst_cross==next_cross_id&&Road::Roads[road_pos_temp].is_dup)){
-                tempint = CrossDict[next_cross_id]->right;
-            }
-            else{
-                tempint=-1;
+            else
+            {
+                tempint = -1;
             }
         }
-        if (tempint != -1) {
+        else if (i2 == 1)
+        {
+            road_pos_temp = Road_findpos_by_id(CrossDict[next_cross_id]->up);
+            if (Road::Roads[road_pos_temp].src_cross == next_cross_id || (Road::Roads[road_pos_temp].dst_cross == next_cross_id && Road::Roads[road_pos_temp].is_dup))
+            {
+                tempint = CrossDict[next_cross_id]->up;
+            }
+            else
+            {
+                tempint = -1;
+            }
+        }
+        else if (i2 == 2)
+        {
+            road_pos_temp = Road_findpos_by_id(CrossDict[next_cross_id]->left);
+            if (Road::Roads[road_pos_temp].src_cross == next_cross_id || (Road::Roads[road_pos_temp].dst_cross == next_cross_id && Road::Roads[road_pos_temp].is_dup))
+            {
+                tempint = CrossDict[next_cross_id]->left;
+            }
+            else
+            {
+                tempint = -1;
+            }
+        }
+        else if (i2 == 3)
+        {
+            road_pos_temp = Road_findpos_by_id(CrossDict[next_cross_id]->right);
+            if (Road::Roads[road_pos_temp].src_cross == next_cross_id || (Road::Roads[road_pos_temp].dst_cross == next_cross_id && Road::Roads[road_pos_temp].is_dup))
+            {
+                tempint = CrossDict[next_cross_id]->right;
+            }
+            else
+            {
+                tempint = -1;
+            }
+        }
+        if (tempint != -1)
+        {
             choose.push_back(tempint);
         }
     }
-    std::vector<double> value_1(choose.size(),0);  //score
-    std::vector<double> value_2(choose.size(),0);  //situation of roads
-    std::vector<double> value_3(choose.size(),0);  //dist
-    std::vector<double> value_res(choose.size(),0);
+    std::vector<double> value_1(choose.size(), 0); //score
+    std::vector<double> value_2(choose.size(), 0); //situation of roads
+    std::vector<double> value_3(choose.size(), 0); //dist
+    std::vector<double> value_res(choose.size(), 0);
     Optimize optimizer;
-    for(int i2=0;i2<choose.size();i2++){   //choose[i] road id
-        value_1[i2]=Optimize::scores[Road_findpos_by_id(choose[i2])][Cross_findpos_by_id(this->dst)];
+    for (int i2 = 0; i2 < choose.size(); i2++)
+    { //choose[i] road id
+        value_1[i2] = Optimize::scores[Road_findpos_by_id(choose[i2])][Cross_findpos_by_id(this->dst)];
     }
-    for(int i2=0;i2<choose.size();i2++){
-        value_2[i2]=optimizer.get_score_road(choose[i2],next_cross_id,this->id);
+    for (int i2 = 0; i2 < choose.size(); i2++)
+    {
+        value_2[i2] = optimizer.get_score_road(choose[i2], next_cross_id, this->id);
     }
-    for(int i2=0;i2<choose.size();i2++){
-        value_3[i2]=Optimize::dist_time[Optimize::speed_map[this->maxspeed]][Cross_findpos_by_id(Road::Roads[Road_findpos_by_id(choose[i2])].dst_cross)][Cross_findpos_by_id(this->dst)];
+    for (int i2 = 0; i2 < choose.size(); i2++)
+    {
+        value_3[i2] = Optimize::dist_time[Optimize::speed_map[this->maxspeed]][Cross_findpos_by_id(Road::Roads[Road_findpos_by_id(choose[i2])].dst_cross)][Cross_findpos_by_id(this->dst)];
     }
-    for(int i2=0;i2<choose.size();i2++){
-        value_res[i2]=-(para_v1*value_1[i2]+para_v2*value_2[i2]+para_v3*value_3[i2]);
+    for (int i2 = 0; i2 < choose.size(); i2++)
+    {
+        value_res[i2] = -(para_v1 * value_1[i2] + para_v2 * value_2[i2] + para_v3 * value_3[i2]);
     }
-    if(Time>=200){
-        int testcs=1;
+    if (Time >= 200)
+    {
+        int testcs = 1;
     }
     optimizer_temp.normalize(value_res);
-    optimizer_temp.sort_ops(choose,value_res);
-    int choice=0;
-    for(;choice<choose.size();choice++){
-        if(!routeIndex){
+    optimizer_temp.sort_ops(choose, value_res);
+    int choice = 0;
+    for (; choice < choose.size(); choice++)
+    {
+        if (!routeIndex)
+        {
             break;
         }
-        if(choose[choice]!=route[routeIndex]) {
+        if (choose[choice] != route[routeIndex])
+        {
             break;
         }
     }
-    if(choice==choose.size()){
-        return routeIndex < route.size() ?route[routeIndex] : -1;
+    if (choice == choose.size())
+    {
+        return routeIndex < route.size() ? route[routeIndex] : -1;
     }
     int new_cross_id;
-    if(next_cross_id==Road::Roads[Road_findpos_by_id(choose[choice])].src_cross){
-        new_cross_id=Road::Roads[Road_findpos_by_id(choose[choice])].dst_cross;
+    if (next_cross_id == Road::Roads[Road_findpos_by_id(choose[choice])].src_cross)
+    {
+        new_cross_id = Road::Roads[Road_findpos_by_id(choose[choice])].dst_cross;
     }
-    else{
-        new_cross_id=Road::Roads[Road_findpos_by_id(choose[choice])].src_cross;
+    else
+    {
+        new_cross_id = Road::Roads[Road_findpos_by_id(choose[choice])].src_cross;
     }
     //route[routeIndex]=choose[choice];
     std::vector<int> new_seq;
-    new_seq.assign(route.begin(),route.begin()+routeIndex);
+    new_seq.assign(route.begin(), route.begin() + routeIndex);
     new_seq.push_back(choose[choice]);
-    for(auto t:Optimize::dist_table[Optimize::speed_map[this->maxspeed]][Cross_findpos_by_id(new_cross_id)][Cross_findpos_by_id(this->dst)]){
+    for (auto t : Optimize::dist_table[Optimize::speed_map[this->maxspeed]][Cross_findpos_by_id(new_cross_id)][Cross_findpos_by_id(this->dst)])
+    {
         new_seq.push_back(t);
     }
-    if(new_seq.size()==route.size()){
-        route=new_seq;
+    if (new_seq.size() == route.size())
+    {
+        route = new_seq;
         this->changes++;
         //std::cout<<"changed"<<std::endl;
     }
 
-    return routeIndex < route.size() ?route[routeIndex] : -1;
+    return routeIndex < route.size() ? route[routeIndex] : -1;
     //xiugai route
-//	return route[routeIndex];
+    //	return route[routeIndex];
 }
 
 //end
