@@ -164,6 +164,9 @@ int main(int argc, char *argv[])
 		channel_avg += road.channel << road.is_dup;
 	channel_avg /= Road::Roads.size();
 
+
+					double div2 = Car::Cars.size() / 10000 +1;
+
 	for (int j = 0; j < car_speed.size(); j++)
 	{
 		int car_djtime_avg = 0;
@@ -215,8 +218,8 @@ int main(int argc, char *argv[])
 
 					car_roadnum_avg /= cars_size;
 
-					int div = 4; //car_speed_avg
-					int start_per_time = (double)car_djtime_avg / cars_size * car_speed[j] * delta_time / div;
+					int div = car_speed_avg; //
+					int start_per_time = (double)car_djtime_avg / cars_size * car_speed[j] * delta_time / div / div2;
 
 					// double div = car_speed_avg; //car_speed_avg
 					// //int start_per_time = (double)car_djtime_avg / cars_size * Cars_dir_speed_group[i][j][0].maxspeed / div;
@@ -250,7 +253,7 @@ int main(int argc, char *argv[])
 							Cars_dir_speed_group[i][j][start_index].started == true;
 						}
 					}
-					//	std::cout << start_per_time << " " << schdule_time << std::endl;
+				//	std::cout << start_per_time << " " << schdule_time << std::endl;
 					schdule_time += delta_time;
 				}
 
@@ -259,10 +262,10 @@ int main(int argc, char *argv[])
 			schdule_time = max_sc_time;
 			//切换方向时增加间隔
 			if (n == 0)
-				schdule_time += car_djtime_avg / car_speed[j] * 1.8;
+				schdule_time += car_djtime_avg / car_speed[j] * div2/4;
 		}
 		//切换速度时增加间隔
-		schdule_time += car_djtime_avg * 1.2;
+		schdule_time += car_djtime_avg * div2/3 ;
 	}
 
 	auto comp2 = [](Car car1, Car car2) { return car1.id < car2.id; };
