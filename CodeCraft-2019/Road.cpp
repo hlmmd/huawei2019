@@ -12,17 +12,30 @@ using std::vector;
 //静态成员变量需要声明
 std::vector<Road> Road::Roads;
 
-
-void Road::init(){
-    carCapcity = channel*length;
+void Road::init()
+{
+    carCapcity = channel * length;
 
     fx = 0, fy = 0, bx = 0, by = 0;
     forwardNum = 0, backwardNum = 0;
     forwardDone = false, backwardDone = false;
     px = NULL, py = NULL, provideNum = NULL, receiveNum = NULL;
     provideNum = NULL;
-}
 
+backwardBucket.clear();
+forwardBucket.clear();
+    for (int i = 0; i < length; i++)
+    {
+        std::vector<int> tmp;
+        for (int j = 0; j < channel; j++)
+        {
+            tmp.push_back(-1);
+        }
+        forwardBucket.push_back(tmp);
+        if (is_dup)
+            backwardBucket.push_back(tmp);
+    }
+}
 
 int Road::Get_origin_priority()
 {
@@ -97,7 +110,7 @@ string Road::chooseAbsoluteBucket(int crossId, string pr)
 
 void Road::setBucket(int crossId)
 {
-   // cout<<"A"<<endl;
+    // cout<<"A"<<endl;
     string bucket = chooseAbsoluteBucket(crossId, "provide");
     if (bucket == "forward")
     {

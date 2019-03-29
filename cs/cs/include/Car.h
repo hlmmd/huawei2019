@@ -64,13 +64,13 @@ public:
     int ReadCar(const std::string carPath);
     void Display();
 
-    int CalDijkstraPath();
+    double CalDijkstraPath();
     int getpath(std::vector<int> &path,int src_cross ,int dst_cross);
     int WriteAnswer(const std::string & answerPath);
 
     int set_dir_type();
     int get_next_dir_type();
-    int CalDijkstraPath_withdir();
+    double CalDijkstraPath_withdir();
     void init();
     //zhao
     void updateDynamic(int state, int x, int y, int curRoad, int roadSpeed, int nextCrossId);

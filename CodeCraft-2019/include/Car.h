@@ -8,7 +8,7 @@
 #define CAR
 class Car
 {
-public:
+  public:
 	int id;
 	int src;
 	int dst;
@@ -21,7 +21,7 @@ public:
 	std::set<int> road_set;
 
 	static std::vector<Car> Cars;
-	static std::vector<Car> Answer;		 ///cs
+	static std::vector<Car> Answer;	///cs
 	static std::vector<Car> Answer_bk; ///cs
 	//车的行驶方向。分为东北、西北、东南、西南四种方向，根据最短路径确定一个方向。
 	//再根据方向重新计算最短路径，如果不存在则重新确定方向。
@@ -49,10 +49,12 @@ public:
 	//cs
 	int changes;
 
-public:
+  public:
 	Car()
 	{
 	}
+
+	
 
 	Car(int i, int s, int d, int m, int time)
 	{

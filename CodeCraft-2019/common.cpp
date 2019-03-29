@@ -280,7 +280,30 @@ int WriteAnswer(std::vector<Car> &cars, const std::string &answerPath)
         out << '(';
         out << car.id << ',';
         out << car.start_time;
+        
         for (auto road_id : car.road_seq)
+            out << ',' << road_id;
+
+        out << ')' << std::endl;
+    }
+    out.close();
+    return 0;
+}
+
+int WriteAnswer2(std::vector<Car> &cars, const std::string &answerPath)
+{
+    std::ofstream out;
+    out.open(answerPath, std::ios::out);
+    if (!out)
+        return -1;
+
+    for (auto car : cars)
+    {
+        out << '(';
+        out << car.id << ',';
+        out << car.start_time;
+        
+        for (auto road_id : car.route)
             out << ',' << road_id;
 
         out << ')' << std::endl;

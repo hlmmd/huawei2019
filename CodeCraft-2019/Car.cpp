@@ -2,8 +2,11 @@
 
 //静态成员变量需要声明
 std::vector<Car> Car::Cars;
-static std::vector<Car> Answer;    ///cs
-static std::vector<Car> Answer_bk; ///cs
+std::vector<Car> Car::Answer;    ///cs
+std::vector<Car> Car::Answer_bk; ///cs
+
+extern int global_flag;
+
 int Car::set_dir_type()
 {
     int cross_id = src;
@@ -69,8 +72,8 @@ int Car::get_next_dir_type()
 void Car::init()
 {
     state = 0;
-    start_time = reset_start_time;
-    started = false;
+    // start_time = reset_start_time;
+    // started = false;
     //plane_time = 0;
     curRoad = -1, nextCrossId = src;
     wait = false;
@@ -477,7 +480,8 @@ int Car::getSpeed()
 
 int Car::getNextRoad()
 { //cs
-    return routeIndex < route.size() ? route[routeIndex] : -1;
+    if (global_flag == 0)
+        return routeIndex < route.size() ? route[routeIndex] : -1;
 
     bool debug = false;
     //return routeIndex < route.size() ?route[routeIndex] : -1;
@@ -496,6 +500,7 @@ int Car::getNextRoad()
     int next_cross_id = this->nextCrossId;
     int tempint = -1;
     int road_pos_temp = -1;
+
     for (int i2 = 0; i2 < 4; i2++)
     {
         if (i2 == 0)
@@ -551,6 +556,7 @@ int Car::getNextRoad()
             choose.push_back(tempint);
         }
     }
+
     std::vector<double> value_1(choose.size(), 0); //score
     std::vector<double> value_2(choose.size(), 0); //situation of roads
     std::vector<double> value_3(choose.size(), 0); //dist
@@ -594,6 +600,7 @@ int Car::getNextRoad()
     {
         return routeIndex < route.size() ? route[routeIndex] : -1;
     }
+
     int new_cross_id;
     if (next_cross_id == Road::Roads[Road_findpos_by_id(choose[choice])].src_cross)
     {
@@ -607,6 +614,7 @@ int Car::getNextRoad()
     std::vector<int> new_seq;
     new_seq.assign(route.begin(), route.begin() + routeIndex);
     new_seq.push_back(choose[choice]);
+
     for (auto t : Optimize::dist_table[Optimize::speed_map[this->maxspeed]][Cross_findpos_by_id(new_cross_id)][Cross_findpos_by_id(this->dst)])
     {
         new_seq.push_back(t);
@@ -617,7 +625,6 @@ int Car::getNextRoad()
         this->changes++;
         //std::cout<<"changed"<<std::endl;
     }
-
     return routeIndex < route.size() ? route[routeIndex] : -1;
     //xiugai route
     //	return route[routeIndex];
