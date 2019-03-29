@@ -8,6 +8,8 @@ using std::vector;
 using std::cout;
 using std::endl;
 
+using std::min;
+
 int main(int argc, char *argv[])
 {
 	srand(time(0));
@@ -164,8 +166,7 @@ int main(int argc, char *argv[])
 		channel_avg += road.channel << road.is_dup;
 	channel_avg /= Road::Roads.size();
 
-
-					double div2 = Car::Cars.size() / 10000 +1;
+	double div2 = Car::Cars.size() / 10000 + 1;
 
 	for (int j = 0; j < car_speed.size(); j++)
 	{
@@ -253,7 +254,7 @@ int main(int argc, char *argv[])
 							Cars_dir_speed_group[i][j][start_index].started == true;
 						}
 					}
-				//	std::cout << start_per_time << " " << schdule_time << std::endl;
+					//	std::cout << start_per_time << " " << schdule_time << std::endl;
 					schdule_time += delta_time;
 				}
 
@@ -262,10 +263,10 @@ int main(int argc, char *argv[])
 			schdule_time = max_sc_time;
 			//切换方向时增加间隔
 			if (n == 0)
-				schdule_time += car_djtime_avg / car_speed[j] * div2/4;
+				schdule_time += car_djtime_avg / car_speed[j] * div2 / 4;
 		}
 		//切换速度时增加间隔
-		schdule_time += car_djtime_avg * div2/3 ;
+		schdule_time += car_djtime_avg * div2 / 3;
 	}
 
 	auto comp2 = [](Car car1, Car car2) { return car1.id < car2.id; };
@@ -325,79 +326,78 @@ int main(int argc, char *argv[])
 	exit(0);
 
 	Optimize optimizer;
+	Optimize::dist_time.assign(Optimize::speed_map.size(), std::vector<std::vector<double>>(Cross::Crosses.size(), std::vector<double>(Cross::Crosses.size(), 9999999)));
+	Optimize::scores.assign(Road::Roads.size(), std::vector<double>(Cross::Crosses.size(), 0));
+	Optimize::dist_table.assign(Optimize::speed_map.size(), std::vector<std::vector<std::vector<int>>>(Cross::Crosses.size(), std::vector<std::vector<int>>(Cross::Crosses.size(), std::vector<int>())));
 
-	Optimize::dist.assign(Cross::Crosses.size(), std::vector<int>(Cross::Crosses.size(), 9999999));
-	Optimize::scores.assign(Road::Roads.size(), std::vector<int>(Cross::Crosses.size(), 0));
-	Optimize::dist_table.assign(Cross::Crosses.size(), std::vector<std::vector<int>>(Cross::Crosses.size(), std::vector<int>()));
 	//这里求出两个表，表太大不用函数调用
 	//n*n vector<int>存储对应两点的最短陆径，弗洛伊德算法
-	for (auto road : Road::Roads)
+	for (auto s : Optimize::speed_map)
 	{
-		Optimize::dist[Cross_findpos_by_id(road.src_cross)][Cross_findpos_by_id(road.dst_cross)] = road.length;
-		Optimize::dist_table[Cross_findpos_by_id(road.src_cross)][Cross_findpos_by_id(road.dst_cross)].push_back(road.id);
-		if (road.is_dup)
+		for (auto road : Road::Roads)
 		{
-			Optimize::dist[Cross_findpos_by_id(road.dst_cross)][Cross_findpos_by_id(road.src_cross)] = road.length;
-			Optimize::dist_table[Cross_findpos_by_id(road.dst_cross)][Cross_findpos_by_id(road.src_cross)].push_back(road.id);
+			Optimize::dist_time[s.second][Cross_findpos_by_id(road.src_cross)][Cross_findpos_by_id(road.dst_cross)] = (double(road.length) / min(s.first, road.maxspeed));
+			Optimize::dist_table[s.second][Cross_findpos_by_id(road.src_cross)][Cross_findpos_by_id(road.dst_cross)].push_back(road.id);
+			if (road.is_dup)
+			{
+				Optimize::dist_time[s.second][Cross_findpos_by_id(road.dst_cross)][Cross_findpos_by_id(road.src_cross)] = (double(road.length) / min(s.first, road.maxspeed));
+				Optimize::dist_table[s.second][Cross_findpos_by_id(road.dst_cross)][Cross_findpos_by_id(road.src_cross)].push_back(road.id);
+			}
 		}
 	}
 
-	for (int i1 = 0; i1 < Cross::Crosses.size(); ++i1)
-	{
-		for (int j1 = 0; j1 < Cross::Crosses.size(); ++j1)
+	for (auto s : Optimize::speed_map)
+	{ //O(cross^3*speeds)
+		for (int i1 = 0; i1 < Cross::Crosses.size(); ++i1)
 		{
-			for (int k1 = 0; k1 < Cross::Crosses.size(); ++k1)
+			for (int j1 = 0; j1 < Cross::Crosses.size(); ++j1)
 			{
-				if (Optimize::dist[j1][k1] > Optimize::dist[j1][i1] + Optimize::dist[i1][k1])
+				for (int k1 = 0; k1 < Cross::Crosses.size(); ++k1)
 				{
-					Optimize::dist[j1][k1] = Optimize::dist[j1][i1] + Optimize::dist[i1][k1];
-					Optimize::dist_table[j1][k1].assign(Optimize::dist_table[j1][i1].begin(), Optimize::dist_table[j1][i1].end());
-					for (auto t : Optimize::dist_table[i1][k1])
+					if (Optimize::dist_time[s.second][j1][k1] > Optimize::dist_time[s.second][j1][i1] + Optimize::dist_time[s.second][i1][k1])
 					{
-						Optimize::dist_table[j1][k1].push_back(t);
+						Optimize::dist_time[s.second][j1][k1] = Optimize::dist_time[s.second][j1][i1] + Optimize::dist_time[s.second][i1][k1];
+						Optimize::dist_table[s.second][j1][k1].assign(Optimize::dist_table[s.second][j1][i1].begin(), Optimize::dist_table[s.second][j1][i1].end());
+						for (auto t : Optimize::dist_table[s.second][i1][k1])
+						{
+							Optimize::dist_table[s.second][j1][k1].push_back(t);
+						}
 					}
 				}
 			}
 		}
 	}
 
+	int min_time = 999999;
+	Car::Answer_bk = Car::Cars;
 	Simulation sim;
-	sim.init();
-	int time_sche = sim.simulate();
-	if (time_sche == -1)
+	int test = 30;
+	while (test--)
 	{
-		cout << "dead";
-		exit(-1);
-	}
-	cout << time_sche << endl;
-	//csbeg  update value1
-
-	//利用之前的Cars，是一个可行解，更新Road.score
-	int road_pos, last_score, dst_pos;
-	for (auto car : Car::Cars)
-	{
-		for (auto i : car.road_seq)
+		if (test == 20)
 		{
-			road_pos = Road_findpos_by_id(i);
-			dst_pos = Cross_findpos_by_id(car.dst);
-			last_score = Optimize::scores[road_pos][dst_pos];
-			Optimize::scores[road_pos][dst_pos] = (last_score == 0) ? time_sche : (last_score + time_sche) / 2; /////?
+			int l = 1;
 		}
+		int time_sche = sim.simulate();
+		cout << "finish time:" << time_sche << "  Test:" << test << endl;
+		if (time_sche == -1)
+		{
+			cout << "dead by cs";
+			Car::Cars = Car::Answer_bk; //
+			sim.init();
+			continue;
+		}
+		optimizer.update_scores(time_sche);
+		if (time_sche < min_time)
+		{
+			Car::Answer = Car::Cars;
+			min_time = time_sche;
+		}
+		Car::Cars = Car::Answer_bk;
+		sim.init();
 	}
-	//Reset_Group(Cars_group);
-
-	//计算3（2）？个方向的下一个cross的分数
-	//1、距离目标dst的dist 直接读取dist[src][dst]
-	//2、当前路径上车辆cars cars_speed  该状态动态更新
-	//3、当前路径状态 int sit_score=Road::Roads[Road_findpos_by_id(id)].score;
-	//在去除单项路之前计算每个路口的车道总数
-	//std::vector<std::vector<std::vector<std::string>>>dist_table(Cross::Crosses.size(),std::vector<std::vector<std::string>>(Cross::Crosses.size(),std::vector<std::string>()));
-
-	//csend
-
-	// TODO:read input filebuf
-	// TODO:process
-	// TODO:write output file
+	cout << "min_time:" << min_time << endl;
+	WriteAnswer(Car::Answer, answerPath);
 
 	return 0;
 }

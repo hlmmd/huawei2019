@@ -9,6 +9,7 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
+#include <unordered_set>
 #include <stack>
 #include <cmath>
 #include <set>
@@ -16,7 +17,6 @@
 #include "Road.h"
 #include "Car.h"
 #include "optimize.h"
-
 //cs paras
 #define para_v1 0.02
 #define para_v2 10
@@ -26,19 +26,19 @@
 //cs paras
 
 
-
 class Car;
 class Road;
 class Cross;
 
-extern std::unordered_map<int, Car *> CarDict;
-extern std::unordered_map<int, Road *> RoadDict;
-extern std::unordered_map<int, Cross *> CrossDict;
+extern std::unordered_map<int, Car*> CarDict;
+extern std::unordered_map<int, Road*> RoadDict;
+extern std::unordered_map<int, Cross*> CrossDict;
 extern std::vector<int> CarNameSpace, RoadNameSpace, CrossNameSpace;
 extern int CarDistribution[3];
 extern int Time;
 
-int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car>> &cars_speed_group, std::vector<int> &car_speed);
+
+int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car>> &cars_speed_group ,std::vector<int> &car_speed);
 
 bool finish_start_group(std::vector<Car> &cars);
 
@@ -65,3 +65,4 @@ int ReadCar(std::vector<Car> &, const std::string);
 int ReadRoad(std::vector<Road> &, const std::string);
 int ReadCross(std::vector<Cross> &, const std::string);
 int WriteAnswer(std::vector<Car> &cars, const std::string &answerPath);
+
