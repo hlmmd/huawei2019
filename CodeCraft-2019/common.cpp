@@ -39,9 +39,13 @@ int Get_next_cross_id(int cross_id, int road_id)
     {
         return Road::Roads[road_pos].dst_cross;
     }
-    else
+    else if (Road::Roads[road_pos].dst_cross == cross_id)
     {
         return Road::Roads[road_pos].src_cross;
+    }
+    else{
+        std::cout<<"error"<<std::endl;
+        exit(0);
     }
 }
 
