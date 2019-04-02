@@ -72,9 +72,6 @@ int Car::get_next_dir_type()
 void Car::init()
 {
     state = 0;
-    // start_time = reset_start_time;
-    // started = false;
-    //plane_time = 0;
     curRoad = -1, nextCrossId = src;
     wait = false;
     x = 0, y = 0;
@@ -128,7 +125,6 @@ int Car::ReadCar(const std::string car_infostr)
 
 void Car::Display()
 {
-    //  std::cout << id << " " << src << " " << dst << " " << maxspeed << " " << start_time << is_dir_type_set << " " << std::endl;
     std::cout << is_dir_type_set << " " << maxspeed << " " << start_time << std::endl;
 }
 
@@ -146,7 +142,6 @@ int Car::getpath(std::vector<int> &path, int src_cross, int dst_cross)
     while (!s.empty())
     {
         int old = s.top();
-        //  std::cout<< Crosses[ s.top()].id<<" ";
         s.pop();
         if (!s.empty())
         {
@@ -157,7 +152,6 @@ int Car::getpath(std::vector<int> &path, int src_cross, int dst_cross)
     }
     std::set<int> st(road_seq.begin(), road_seq.end());
     road_set = st;
-    //   std::cout << std::endl;
     return 0;
 }
 
@@ -425,11 +419,8 @@ double Car::CalDijkstraPath()
                 if (visited[dist_pos] == false && dist[dist_pos] > (tempmin + tempdist))
                 {
                     //只有比原值更小才更新
-
                     dist[dist_pos] = tempmin + tempdist;
                     path[dist_pos] = pos;
-
-                    //    std::cout << pos << " " << roadpos << " " << dst_id << " "<<roadlength<<" "<<speed<<" "<<dist[dist_pos]<<std::endl;
                 }
             }
         }
@@ -623,11 +614,8 @@ int Car::getNextRoad()
     {
         route = new_seq;
         this->changes++;
-        //std::cout<<"changed"<<std::endl;
     }
     return routeIndex < route.size() ? route[routeIndex] : -1;
-    //xiugai route
-    //	return route[routeIndex];
 }
 
 //end

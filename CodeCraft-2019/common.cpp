@@ -78,15 +78,13 @@ int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car
     for (auto &groups : cars_speed_group)
     {
         auto comp = [](Car car1, Car car2) {
-            if (car1.is_dir_type_set == car2.is_dir_type_set)
-            {
-                // if(car1.dj_time==car2.dj_time)
-                //     return  car1.start_time<car2.start_time;
-                return car1.dj_time < car2.dj_time;
-            }
-
-            return car1.is_dir_type_set < car2.is_dir_type_set;
-            //return car1.maxspeed > car2.maxspeed;
+         
+             if (car1.dj_time == car2.dj_time)
+             {
+                return car1.is_dir_type_set < car2.is_dir_type_set;
+             }
+             return car1.dj_time > car2.dj_time;
+         
         };
         std::sort(groups.begin(), groups.end(), comp);
     }

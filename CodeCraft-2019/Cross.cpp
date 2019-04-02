@@ -313,9 +313,6 @@ void Cross::outOfCarport()
             delays++;
         }
     }
-    //if(delays>=1000){
-    //    cout<<"delay1000"<<endl;
-    //}
     if (readyCars.empty())
         return;
     sort(readyCars.begin(), readyCars.end());
@@ -366,9 +363,6 @@ bool Cross::isConflict(int fromA, int directionA, int fromB, int directionB)
 
 int Simulation::step()
 {
-    //if(Time%100==0) {
-    //    std::cout << "time: " << Time << std::endl;
-    //}
     for (int crossId : CrossNameSpace)
         CrossDict[crossId]->setDone(false);
     for (int road : RoadNameSpace)

@@ -22,8 +22,8 @@ void Road::init()
     px = NULL, py = NULL, provideNum = NULL, receiveNum = NULL;
     provideNum = NULL;
 
-backwardBucket.clear();
-forwardBucket.clear();
+    backwardBucket.clear();
+    forwardBucket.clear();
     for (int i = 0; i < length; i++)
     {
         std::vector<int> tmp;
