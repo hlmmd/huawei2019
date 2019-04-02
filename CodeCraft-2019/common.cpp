@@ -43,8 +43,9 @@ int Get_next_cross_id(int cross_id, int road_id)
     {
         return Road::Roads[road_pos].src_cross;
     }
-    else{
-        std::cout<<"error"<<std::endl;
+    else
+    {
+        std::cout << "error" << std::endl;
         exit(0);
     }
 }
@@ -78,13 +79,15 @@ int Divide_speed_Group(std::vector<Car> &cars_group, std::vector<std::vector<Car
     for (auto &groups : cars_speed_group)
     {
         auto comp = [](Car car1, Car car2) {
-         
-             if (car1.dj_time == car2.dj_time)
-             {
-                return car1.is_dir_type_set < car2.is_dir_type_set;
-             }
-             return car1.dj_time > car2.dj_time;
-         
+            if (car1.is_dir_type_set == car2.is_dir_type_set)
+            {
+                // if(car1.dj_time==car2.dj_time)
+                //     return  car1.start_time<car2.start_time;
+                return car1.dj_time < car2.dj_time;
+            }
+
+            return car1.is_dir_type_set < car2.is_dir_type_set;
+            //return car1.maxspeed > car2.maxspeed;
         };
         std::sort(groups.begin(), groups.end(), comp);
     }
@@ -282,7 +285,7 @@ int WriteAnswer(std::vector<Car> &cars, const std::string &answerPath)
         out << '(';
         out << car.id << ',';
         out << car.start_time;
-        
+
         for (auto road_id : car.road_seq)
             out << ',' << road_id;
 
@@ -304,7 +307,7 @@ int WriteAnswer2(std::vector<Car> &cars, const std::string &answerPath)
         out << '(';
         out << car.id << ',';
         out << car.start_time;
-        
+
         for (auto road_id : car.route)
             out << ',' << road_id;
 

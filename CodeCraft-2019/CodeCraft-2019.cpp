@@ -3,10 +3,10 @@
 #include <sys/time.h>
 #include "common.h"
 
-using std::vector;
 using std::cout;
 using std::endl;
 using std::min;
+using std::vector;
 
 int global_flag = 0;
 
@@ -72,9 +72,9 @@ int main(int argc, char *argv[])
 	int time = 1;
 
 	auto comp = [](Car car1, Car car2) {
-		//	if (car1.start_time == car2.start_time)
-		return car1.maxspeed > car2.maxspeed;
-		//		return car1.start_time < car2.start_time;
+		if (car1.start_time == car2.start_time)
+			return car1.maxspeed > car2.maxspeed;
+		return car1.start_time < car2.start_time;
 	};
 	std::sort(Car::Cars.begin(), Car::Cars.end(), comp);
 
@@ -206,48 +206,11 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	double car_djtime_avg = 0;
 	for (int j = 0; j < car_speed.size(); j++)
 	{
 		for (int i = 0; i < Dir_group_size; i++)
 		{
 
-			std::unordered_map<int, int> start_cross_id;
-			int start_cross_channels = 0;
-			for (auto car : Cars_dir_speed_group[i][j])
-			{
-				if (start_cross_id.find(car.src) == start_cross_id.end())
-					start_cross_id[car.src] = 1;
-				else
-					start_cross_id[car.src]++;
-			}
-			std::vector<int> start_cross_id_vector;
-			for (auto it = start_cross_id.begin(); it != start_cross_id.end(); it++)
-			{
-				if (it->second >= (Cars_dir_speed_group[i][j].size() / 70))
-					start_cross_id_vector.push_back(it->first);
-				//cout << it->first << " " << it->second << endl;
-			}
-
-			for (auto cross_id : start_cross_id_vector)
-			{
-				for (int i = 0; i < ROADS_OF_CROSS; i++)
-					if (Cross::Crosses[Cross_findpos_by_id(cross_id)].dir[i] != -1)
-						start_cross_channels++;
-			}
-
-			int total_vol = 0;
-			for (auto cross_id : start_cross_id_vector)
-			{
-				for (int i = 0; i < ROADS_OF_CROSS; i++)
-					if (Cross::Crosses[Cross_findpos_by_id(cross_id)].dir[i] != -1)
-					{
-						int pos = Road_findpos_by_id(Cross::Crosses[Cross_findpos_by_id(cross_id)].dir[i]);
-						total_vol += Road::Roads[pos].channel * Road::Roads[pos].length;
-					}
-			}
-
-			int start_chnnel = 0;
 			int started_car_nums = 0;
 			//计算这些车的平均用时，作为relax_time，表示跑完发完一轮车
 			int t = 0;
@@ -257,7 +220,7 @@ int main(int argc, char *argv[])
 					t += car.dj_time;
 			}
 			double relax_time = t / Cars_dir_speed_group[i][j].size();
-
+			double car_djtime_avg = 0;
 			int car_roadnum_avg = 0;
 			int start_per_time;
 			while (!finish_start_group(Cars_dir_speed_group[i][j]))
@@ -277,17 +240,9 @@ int main(int argc, char *argv[])
 				}
 				car_roadnum_avg /= cars_size;
 				double div = car_speed_avg; //car_speed_avg
+
+				start_per_time = (double)car_djtime_avg / cars_size * Cars_dir_speed_group[i][j][0].maxspeed / 19;
 				car_djtime_avg /= cars_size;
-				start_per_time = start_cross_id_vector.size() * sqrt(sqrt(car_speed[j]));
-				if (j <= 2 && start_per_time > 35)
-				{
-					start_per_time = 35;
-				}
-				else if (start_per_time > 30)
-					start_per_time = 30;
-				else if (start_per_time < 20)
-					start_per_time = 20;
-				//	int start_per_time = (double)relax_time * relax_time / car_djtime_avg * cars_size * Cars_dir_speed_group[i][j][0].maxspeed / div * 2.5;
 
 				int start_index = 0;
 				for (; start_index < Cars_dir_speed_group[i][j].size(); start_index++)
@@ -315,7 +270,6 @@ int main(int argc, char *argv[])
 				{
 					if (Cars_dir_speed_group[i][j][start_index].started == false)
 					{
-						//Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][start_index].id)].start_time = (schdule_time);
 						Car::Cars[Car_findpos_by_id(Cars_dir_speed_group[i][j][start_index].id)].started = true;
 						Cars_dir_speed_group[i][j][start_index].started = true;
 						started_car_nums++;
@@ -324,10 +278,9 @@ int main(int argc, char *argv[])
 					start_index++;
 				}
 				schdule_time += delta_time;
-				cout << start_per_time << " " << schdule_time << endl;
 			}
 
-			schdule_time += car_djtime_avg * 2;
+			schdule_time += car_djtime_avg / 3.2;
 		}
 	}
 
